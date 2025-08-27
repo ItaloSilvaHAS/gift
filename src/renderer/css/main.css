@@ -1,0 +1,505 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbitron', monospace;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    cursor: none;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ============ MAIN MENU ============ */
+#main-menu {
+    background: 
+        linear-gradient(45deg, #000 25%, #1a0000 25%, #1a0000 50%, #000 50%, #000 75%, #1a0000 75%),
+        radial-gradient(circle at 50% 50%, #330000 0%, #000 70%);
+    background-size: 20px 20px, 100% 100%;
+    animation: blood-pulse 3s infinite;
+}
+
+.blood-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="30" r="2" fill="%23660000" opacity="0.3"/><circle cx="80" cy="70" r="1.5" fill="%23990000" opacity="0.4"/><circle cx="60" cy="20" r="1" fill="%23aa0000" opacity="0.2"/></svg>');
+    animation: blood-drip 4s infinite;
+}
+
+.glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 0, 0, 0.03) 2px,
+        rgba(255, 0, 0, 0.03) 4px
+    );
+    animation: glitch-scan 0.1s infinite linear;
+}
+
+.title-container {
+    text-align: center;
+    margin-top: 15vh;
+}
+
+.game-title {
+    font-family: 'Nosifer', cursive;
+    font-size: 4rem;
+    color: #ff0000;
+    text-shadow: 
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000,
+        3px 3px 0px #000;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.glitch {
+    position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    animation: glitch-1 0.5s infinite;
+    color: #ff00ff;
+    z-index: -1;
+}
+
+.glitch::after {
+    animation: glitch-2 0.5s infinite;
+    color: #00ffff;
+    z-index: -2;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #ccc;
+    text-shadow: 2px 2px 0px #000;
+    opacity: 0.8;
+}
+
+.menu-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 5vh;
+}
+
+.menu-btn {
+    position: relative;
+    background: linear-gradient(45deg, #1a1a1a, #333);
+    border: 2px solid #666;
+    color: #fff;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(45deg, #333, #555);
+    border-color: #ff0000;
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.btn-blood {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, #ff0000);
+    transition: top 0.3s ease;
+}
+
+.menu-btn:hover .btn-blood {
+    top: 0;
+    opacity: 0.2;
+}
+
+.menu-footer {
+    position: absolute;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
+/* ============ LOAD MENU ============ */
+#load-menu {
+    background: linear-gradient(135deg, #000 0%, #1a0000 100%);
+}
+
+.load-container, .options-container {
+    max-width: 800px;
+    margin: 5vh auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.load-container h2, .options-container h2 {
+    font-family: 'Nosifer', cursive;
+    font-size: 2.5rem;
+    color: #ff0000;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px #ff0000;
+}
+
+.saves-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.save-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #666;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-item:hover {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #ff0000;
+}
+
+/* ============ OPTIONS MENU ============ */
+.option-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 2rem;
+}
+
+.option-group label {
+    font-weight: 700;
+    color: #ccc;
+}
+
+.option-group input[type="range"] {
+    width: 200px;
+    accent-color: #ff0000;
+}
+
+.option-group select {
+    background: #1a1a1a;
+    border: 1px solid #666;
+    color: #fff;
+    padding: 5px 10px;
+    font-family: 'Orbitron', monospace;
+}
+
+/* ============ GAME SCREEN ============ */
+#game-screen {
+    background: #000;
+}
+
+.game-ui {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-content {
+    flex: 1;
+    position: relative;
+}
+
+#scene-container {
+    width: 100%;
+    height: 70%;
+    position: relative;
+    overflow: hidden;
+}
+
+#background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: all 0.5s ease;
+}
+
+#characters {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+#effects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.dialogue-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+    border-top: 2px solid #666;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.speaker-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ff6666;
+    margin-bottom: 0.5rem;
+}
+
+.dialogue-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.dialogue-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.choice-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #666;
+    color: #fff;
+    padding: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', monospace;
+}
+
+.choice-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: #ff0000;
+}
+
+.choice-btn.rage { border-left: 4px solid #ff0000; }
+.choice-btn.control { border-left: 4px solid #0066ff; }
+.choice-btn.redemption { border-left: 4px solid #00ff66; }
+
+.game-hud {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 10;
+}
+
+.karma-display {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 0.5rem 1rem;
+    border: 1px solid #666;
+    min-width: 150px;
+}
+
+.karma-bar {
+    width: 100%;
+    height: 10px;
+    background: #333;
+    border: 1px solid #666;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+#karma-fill {
+    height: 100%;
+    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00);
+    transition: width 0.3s ease;
+    width: 50%;
+}
+
+.inventory {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 0.5rem 1rem;
+    border: 1px solid #666;
+}
+
+.hud-btn {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #666;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: 'Orbitron', monospace;
+    transition: all 0.3s ease;
+}
+
+.hud-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: #ff0000;
+}
+
+/* ============ LOADING SCREEN ============ */
+#loading-screen {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #333;
+    border-top: 3px solid #ff0000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes blood-pulse {
+    0%, 100% { background-color: rgba(0, 0, 0, 1); }
+    50% { background-color: rgba(26, 0, 0, 0.8); }
+}
+
+@keyframes blood-drip {
+    0% { transform: translateY(-10px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes glitch-scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes glitch-1 {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitch-2 {
+    0% { transform: translate(0); }
+    20% { transform: translate(2px, -2px); }
+    40% { transform: translate(2px, 2px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(-2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ============ JUMPSCARE EFFECTS ============ */
+.jumpscare {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ff0000;
+    z-index: 9999;
+    animation: jumpscare-flash 0.1s ease-out;
+}
+
+@keyframes jumpscare-flash {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.screen-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-2px, -2px) rotate(-1deg); }
+    20% { transform: translate(2px, -2px) rotate(1deg); }
+    30% { transform: translate(-2px, 2px) rotate(0deg); }
+    40% { transform: translate(2px, 2px) rotate(1deg); }
+    50% { transform: translate(-2px, -2px) rotate(-1deg); }
+    60% { transform: translate(2px, -2px) rotate(0deg); }
+    70% { transform: translate(-2px, 2px) rotate(-1deg); }
+    80% { transform: translate(2px, 2px) rotate(1deg); }
+    90% { transform: translate(-2px, -2px) rotate(0deg); }
+}

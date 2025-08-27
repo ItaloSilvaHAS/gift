@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evelly Adventure</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Menu Principal -->
+        <div id="main-menu" class="screen active">
+            <div class="blood-overlay"></div>
+            <div class="glitch-overlay"></div>
+            
+            <div class="title-container">
+                <h1 class="game-title glitch" data-text="EVELLY ADVENTURE">EVELLY ADVENTURE</h1>
+                <p class="subtitle">Sobreviva às sombras de Noxhaven</p>
+            </div>
+            
+            <nav class="menu-nav">
+                <button class="menu-btn" id="new-game-btn">
+                    <span class="btn-text">COMEÇAR</span>
+                    <span class="btn-blood"></span>
+                </button>
+                <button class="menu-btn" id="load-game-btn">
+                    <span class="btn-text">CARREGAR</span>
+                    <span class="btn-blood"></span>
+                </button>
+                <button class="menu-btn" id="options-btn">
+                    <span class="btn-text">OPÇÕES</span>
+                    <span class="btn-blood"></span>
+                </button>
+                <button class="menu-btn" id="exit-btn">
+                    <span class="btn-text">SAIR</span>
+                    <span class="btn-blood"></span>
+                </button>
+            </nav>
+            
+            <div class="menu-footer">
+                <p>Pressione ESC para voltar ao menu a qualquer momento</p>
+            </div>
+        </div>
+
+        <!-- Tela de Carregamento de Saves -->
+        <div id="load-menu" class="screen">
+            <div class="load-container">
+                <h2>CARREGAR JOGO</h2>
+                <div id="saves-list" class="saves-list">
+                    <!-- Saves serão carregados dinamicamente -->
+                </div>
+                <button id="back-to-menu" class="menu-btn">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- Tela de Opções -->
+        <div id="options-menu" class="screen">
+            <div class="options-container">
+                <h2>OPÇÕES</h2>
+                <div class="option-group">
+                    <label>Volume Master:</label>
+                    <input type="range" id="master-volume" min="0" max="100" value="75">
+                </div>
+                <div class="option-group">
+                    <label>Volume Música:</label>
+                    <input type="range" id="music-volume" min="0" max="100" value="60">
+                </div>
+                <div class="option-group">
+                    <label>Volume Efeitos:</label>
+                    <input type="range" id="sfx-volume" min="0" max="100" value="80">
+                </div>
+                <div class="option-group">
+                    <label>Jumpscares:</label>
+                    <select id="jumpscare-intensity">
+                        <option value="low">Baixo</option>
+                        <option value="medium" selected>Médio</option>
+                        <option value="high">Alto</option>
+                        <option value="extreme">Extremo</option>
+                    </select>
+                </div>
+                <button id="options-back" class="menu-btn">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="game-screen" class="screen">
+            <div class="game-ui">
+                <div class="game-content">
+                    <div id="scene-container">
+                        <div id="background"></div>
+                        <div id="characters"></div>
+                        <div id="effects"></div>
+                    </div>
+                    
+                    <div id="dialogue-box" class="dialogue-box">
+                        <div class="speaker-name"></div>
+                        <div class="dialogue-text"></div>
+                        <div class="dialogue-choices"></div>
+                    </div>
+                </div>
+                
+                <div class="game-hud">
+                    <div class="karma-display">
+                        <span>Karma: </span>
+                        <span id="karma-value">0</span>
+                        <div class="karma-bar">
+                            <div id="karma-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="inventory">
+                        <div class="ammo-counter">
+                            <span>Munição: </span>
+                            <span id="ammo-count">12</span>
+                        </div>
+                    </div>
+                    
+                    <button id="menu-toggle" class="hud-btn">MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Carregando...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="bg-music" loop></audio>
+    <audio id="sfx-player"></audio>
+    <audio id="jumpscare-audio"></audio>
+
+    <script src="js/audio.js"></script>
+    <script src="js/save-system.js"></script>
+    <script src="js/game-state.js"></script>
+    <script src="js/dialogue-system.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
