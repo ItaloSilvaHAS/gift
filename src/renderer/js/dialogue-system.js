@@ -247,7 +247,7 @@ class DialogueSystem {
         }
         
         // Play choice sound
-        window.audioManager.playSound('choice_select');
+        window.audioManager?.playSound('choice_select');
         
         // Visual feedback
         const choiceButtons = document.querySelectorAll('.choice-btn');
@@ -318,7 +318,7 @@ class DialogueSystem {
         document.body.appendChild(jumpscareDiv);
         
         // Play jumpscare sound
-        window.audioManager.playJumpscare(intensity);
+        window.audioManager?.playJumpscare(intensity);
         
         // Screen shake
         document.body.classList.add('screen-shake');
@@ -371,10 +371,12 @@ class DialogueSystem {
     }
 
     playTypingSound() {
-        // Randomize typing sound for variety
-        const sounds = ['type1', 'type2', 'type3'];
-        const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
-        window.audioManager.playSound(randomSound);
+        // Randomize typing sound for variety - only if audioManager is available
+        if (window.audioManager) {
+            const sounds = ['type1', 'type2', 'type3'];
+            const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+            window.audioManager.playSound(randomSound);
+        }
     }
 
     hideDialogue() {

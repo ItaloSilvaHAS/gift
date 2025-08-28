@@ -1,4 +1,3 @@
-
 class MenuSystem {
     constructor() {
         this.currentScreen = 'main-menu';
@@ -24,7 +23,20 @@ class MenuSystem {
         document.getElementById('jumpscare-intensity')?.addEventListener('change', (e) => this.updateJumpscareIntensity(e.target.value));
 
         // Game menu toggle
-        document.getElementById('menu-toggle')?.addEventListener('click', () => this.toggleGameMenu());
+        const menuToggle = document.getElementById('menu-toggle');
+        menuToggle?.addEventListener('click', () => {
+            if (this.currentScreen === 'game-screen') {
+                this.showPauseMenu();
+            } else {
+                this.showMainMenu();
+            }
+        });
+
+        // Quick save button
+        const quickSaveBtn = document.getElementById('quick-save-btn');
+        quickSaveBtn?.addEventListener('click', () => {
+            window.saveSystem?.quickSave();
+        });
 
         // Global keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -44,7 +56,7 @@ class MenuSystem {
             btn.addEventListener('mouseenter', () => {
                 window.audioManager?.playSound('menu_hover');
             });
-            
+
             btn.addEventListener('click', () => {
                 window.audioManager?.playSound('menu_click');
             });
@@ -54,13 +66,13 @@ class MenuSystem {
     initializeMenu() {
         // Start menu music
         window.audioManager?.playMusic('menu_theme');
-        
+
         // Load settings
         this.loadSettings();
-        
+
         // Show main menu
         this.showMainMenu();
-        
+
         // Add atmospheric effects
         this.startMenuEffects();
     }
@@ -105,9 +117,9 @@ class MenuSystem {
             pointer-events: none;
             animation: bloodFall 3s linear forwards;
         `;
-        
+
         document.body.appendChild(drop);
-        
+
         setTimeout(() => {
             document.body.removeChild(drop);
         }, 3000);
@@ -118,7 +130,7 @@ class MenuSystem {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        
+
         // Show target screen
         const targetScreen = document.getElementById(screenId);
         if (targetScreen) {
@@ -134,10 +146,18 @@ class MenuSystem {
 
     async showLoadMenu() {
         this.showScreen('load-menu');
-        
+
         // Populate save slots
-        if (window.saveSystem) {
-            await window.saveSystem.populateSaveSlots();
+        try {
+            if (window.saveSystem) {
+                await window.saveSystem.populateSaveSlots();
+            } else {
+                console.error('Save system not available');
+                this.showNotification('Sistema de salvamento não disponível', 2000);
+            }
+        } catch (error) {
+            console.error('Error loading save slots:', error);
+            this.showNotification('Erro ao carregar saves', 2000);
         }
     }
 
@@ -154,10 +174,10 @@ class MenuSystem {
     startNewGame() {
         // Reset game state
         window.gameState = new GameState();
-        
+
         // Show loading screen
         this.showScreen('loading-screen');
-        
+
         // Load Chapter 1
         setTimeout(() => {
             this.showGameScreen();
@@ -166,24 +186,14 @@ class MenuSystem {
     }
 
     startChapter1() {
-        // This will be implemented when Chapter 1 is ready
         console.log('Starting Chapter 1...');
-        
-        // For now, show a placeholder dialogue
-        window.dialogueSystem?.showDialogue({
-            speaker: '',
-            text: 'Bem-vindo a Noxhaven, Evelly. A cidade que nunca esquece...',
-            choices: [
-                {
-                    text: 'Continuar para o tutorial',
-                    type: 'neutral',
-                    significant: false
-                }
-            ]
-        });
-        
-        // Play chapter music
-        window.audioManager?.playMusic('chapter1_ambient');
+
+        // Load Chapter 1 properly
+        if (window.gameController) {
+            window.gameController.loadChapter(1);
+        } else {
+            console.error('GameController not found!');
+        }
     }
 
     exitGame() {
@@ -195,10 +205,58 @@ class MenuSystem {
         }
     }
 
+    showPauseMenu() {
+        // Criar menu de pausa se não existir
+        let pauseMenu = document.getElementById('pause-menu');
+        if (!pauseMenu) {
+            pauseMenu = document.createElement('div');
+            pauseMenu.id = 'pause-menu';
+            pauseMenu.className = 'screen';
+            pauseMenu.innerHTML = `
+                <div class="menu-container">
+                    <h2>Jogo Pausado</h2>
+                    <div class="menu-buttons">
+                        <button id="resume-game-btn" class="menu-btn">Continuar</button>
+                        <button id="save-game-btn" class="menu-btn">Salvar Jogo</button>
+                        <button id="pause-options-btn" class="menu-btn">Opções</button>
+                        <button id="pause-main-menu-btn" class="menu-btn">Menu Principal</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(pauseMenu);
+            
+            // Bind eventos do pause menu
+            document.getElementById('resume-game-btn')?.addEventListener('click', () => {
+                this.showGameScreen();
+            });
+            
+            document.getElementById('save-game-btn')?.addEventListener('click', () => {
+                window.saveSystem?.saveGame('manual_save');
+                this.showNotification('Jogo salvo!');
+            });
+            
+            document.getElementById('pause-options-btn')?.addEventListener('click', () => {
+                this.showOptionsMenu();
+            });
+            
+            document.getElementById('pause-main-menu-btn')?.addEventListener('click', () => {
+                if (confirm('Tem certeza que deseja voltar ao menu principal? Progresso não salvo será perdido.')) {
+                    this.showMainMenu();
+                }
+            });
+        }
+        
+        this.showScreen('pause-menu');
+    }
+
     handleEscapeKey() {
         switch(this.currentScreen) {
             case 'game-screen':
-                this.showMainMenu();
+                this.showPauseMenu();
+                break;
+            case 'pause-menu':
+                this.showGameScreen();
                 break;
             case 'load-menu':
             case 'options-menu':
@@ -252,7 +310,7 @@ class MenuSystem {
 
     updateOptionsDisplay() {
         const settings = window.gameState.settings;
-        
+
         document.getElementById('master-volume').value = settings.masterVolume;
         document.getElementById('music-volume').value = settings.musicVolume;
         document.getElementById('sfx-volume').value = settings.sfxVolume;
@@ -269,7 +327,7 @@ class MenuSystem {
             if (savedSettings) {
                 const settings = JSON.parse(savedSettings);
                 Object.assign(window.gameState.settings, settings);
-                
+
                 // Apply audio settings
                 window.audioManager?.setMasterVolume(settings.masterVolume);
                 window.audioManager?.setMusicVolume(settings.musicVolume);
@@ -285,7 +343,7 @@ class MenuSystem {
         const notification = document.createElement('div');
         notification.className = 'menu-notification';
         notification.textContent = message;
-        
+
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -299,9 +357,9 @@ class MenuSystem {
             z-index: 10002;
             animation: fadeInOut 0.3s ease;
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             document.body.removeChild(notification);
         }, duration);

@@ -53,7 +53,7 @@ class GameController {
                 module: null // Will be loaded dynamically
             },
             2: {
-                name: 'Nas Profundezas',
+                name: 'O Setor das Vozes',
                 scenes: 8,
                 module: null
             },
@@ -148,8 +148,23 @@ class GameController {
         window.menuSystem?.showScreen('loading-screen');
 
         try {
-            // Load chapter module (when implemented)
-            // chapter.module = await import(`./chapters/chapter${chapterNumber}.js`);
+            // Wait for Chapter1 to be available
+            let attempts = 0;
+            while (!window.Chapter1 && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            // Carregar módulo do capítulo dinamicamente
+            if (chapterNumber === 1 && window.Chapter1) {
+                chapter.module = new window.Chapter1();
+                console.log('Chapter 1 module created successfully');
+            } else if (chapterNumber === 2 && window.Chapter2) {
+                chapter.module = new window.Chapter2();
+                console.log('Chapter 2 module created successfully');
+            } else {
+                throw new Error(`Chapter ${chapterNumber} module not found after waiting`);
+            }
             
             // Set current chapter
             this.currentChapter = chapterNumber;
@@ -159,12 +174,32 @@ class GameController {
             // Apply chapter-specific settings
             this.applyChapterSettings(chapter);
 
-            // Start first scene
-            await this.startScene(1);
+            // Hide loading screen and show game first
+            window.menuSystem?.showGameScreen();
+
+            // Load the chapter using its module
+            if (chapter.module && chapter.module.loadChapter) {
+                await chapter.module.loadChapter();
+            } else {
+                throw new Error('Chapter module loadChapter method not found');
+            }
 
             return true;
         } catch (error) {
             console.error(`Failed to load Chapter ${chapterNumber}:`, error);
+            
+            // Show error message
+            if (window.dialogueSystem) {
+                window.dialogueSystem.showDialogue({
+                    speaker: 'Sistema',
+                    text: `Erro ao carregar Capítulo ${chapterNumber}. Verifique o console para mais detalhes.`,
+                    choices: [{
+                        text: 'Voltar ao Menu',
+                        type: 'neutral'
+                    }]
+                });
+            }
+            
             return false;
         }
     }
@@ -463,5 +498,6 @@ window.debug = {
     trigger: (event) => window.gameController?.debugTriggerEvent(event),
     karma: (value) => window.gameState?.debugSetKarma(value),
     save: () => window.saveSystem?.saveGame('debug_save'),
-    load: () => window.saveSystem?.loadGame('debug_save.json')
+    load: () => window.saveSystem?.loadGame('debug_save.json'),
+    chapter2: () => window.gameController?.loadChapter(2)
 };

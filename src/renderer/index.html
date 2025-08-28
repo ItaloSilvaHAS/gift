@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -16,12 +15,12 @@
         <div id="main-menu" class="screen active">
             <div class="blood-overlay"></div>
             <div class="glitch-overlay"></div>
-            
+
             <div class="title-container">
                 <h1 class="game-title glitch" data-text="EVELLY ADVENTURE">EVELLY ADVENTURE</h1>
                 <p class="subtitle">Sobreviva às sombras de Noxhaven</p>
             </div>
-            
+
             <nav class="menu-nav">
                 <button class="menu-btn" id="new-game-btn">
                     <span class="btn-text">COMEÇAR</span>
@@ -40,7 +39,7 @@
                     <span class="btn-blood"></span>
                 </button>
             </nav>
-            
+
             <div class="menu-footer">
                 <p>Pressione ESC para voltar ao menu a qualquer momento</p>
             </div>
@@ -95,14 +94,14 @@
                         <div id="characters"></div>
                         <div id="effects"></div>
                     </div>
-                    
+
                     <div id="dialogue-box" class="dialogue-box">
                         <div class="speaker-name"></div>
                         <div class="dialogue-text"></div>
                         <div class="dialogue-choices"></div>
                     </div>
                 </div>
-                
+
                 <div class="game-hud">
                     <div class="karma-display">
                         <span>Karma: </span>
@@ -111,14 +110,15 @@
                             <div id="karma-fill"></div>
                         </div>
                     </div>
-                    
+
                     <div class="inventory">
                         <div class="ammo-counter">
                             <span>Munição: </span>
                             <span id="ammo-count">12</span>
                         </div>
                     </div>
-                    
+
+                    <button id="quick-save-btn" class="hud-btn">SALVAR (F5)</button>
                     <button id="menu-toggle" class="hud-btn">MENU</button>
                 </div>
             </div>
@@ -139,10 +139,13 @@
     <audio id="jumpscare-audio"></audio>
 
     <script src="js/audio.js"></script>
-    <script src="js/save-system.js"></script>
     <script src="js/game-state.js"></script>
     <script src="js/dialogue-system.js"></script>
+    <script src="js/save-system.js"></script>
+    <!-- Load chapters before main systems -->
+    <script src="../chapters/chapter1.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/game.js"></script>
+    <script src="../chapters/chapter2.js"></script>
 </body>
 </html>
