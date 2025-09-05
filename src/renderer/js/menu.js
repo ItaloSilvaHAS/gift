@@ -14,6 +14,14 @@ class MenuSystem {
 
         // Load menu
         document.getElementById('back-to-menu')?.addEventListener('click', () => this.showMainMenu());
+        
+        // Chapter selector buttons
+        document.querySelectorAll('.chapter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const chapterNumber = parseInt(e.currentTarget.dataset.chapter);
+                this.startChapter(chapterNumber);
+            });
+        });
 
         // Options menu
         document.getElementById('options-back')?.addEventListener('click', () => this.showMainMenu());
@@ -196,12 +204,40 @@ class MenuSystem {
         }
     }
 
+    startChapter(chapterNumber) {
+        console.log(`Starting Chapter ${chapterNumber}...`);
+
+        // Reset game state for fresh chapter start
+        window.gameState = new GameState();
+        window.gameState.currentChapter = chapterNumber;
+        
+        // Set appropriate karma/flags based on chapter
+        if (chapterNumber >= 2) {
+            window.gameState.karma = 10; // Some karma for later chapters
+        }
+        if (chapterNumber >= 3) {
+            window.gameState.flags.evellyTrustLevel = 2;
+            window.gameState.flags.ezraRivalry = 1;
+        }
+
+        // Show loading screen
+        this.showScreen('loading-screen');
+
+        // Load the chapter after a brief delay
+        setTimeout(() => {
+            this.showGameScreen();
+            if (window.gameController) {
+                window.gameController.loadChapter(chapterNumber);
+            } else {
+                console.error('GameController not found!');
+            }
+        }, 1500);
+    }
+
     exitGame() {
         if (confirm('Tem certeza que deseja sair do jogo?')) {
-            const { ipcRenderer } = require('electron');
-            if (ipcRenderer) {
-                window.close();
-            }
+            // In web environment, just redirect or close tab
+            window.location.reload();
         }
     }
 
@@ -277,10 +313,11 @@ class MenuSystem {
     }
 
     toggleFullscreen() {
-        const { ipcRenderer } = require('electron');
-        if (ipcRenderer) {
-            // This would need to be implemented in main.js
-            ipcRenderer.send('toggle-fullscreen');
+        // Use web fullscreen API instead of Electron
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen();
         }
     }
 

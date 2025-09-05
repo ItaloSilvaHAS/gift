@@ -40,85 +40,78 @@ class SaveSystem {
     async saveGame(slotName = null) {
         try {
             const saveData = this.createSaveData();
+            const fileName = slotName || `save_${Date.now()}`;
             
-            const response = await fetch('/api/save-game', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(saveData)
-            });
-
-            const result = await response.json();
+            // Save to localStorage instead of server
+            localStorage.setItem(`evelly_save_${fileName}`, JSON.stringify(saveData));
             
-            if (result.success) {
-                this.showSaveNotification('Jogo salvo com sucesso!');
-                console.log(`Game saved to ${result.fileName}`);
-                return result.fileName;
-            } else {
-                throw new Error(result.error);
-            }
+            this.showSaveNotification('Jogo salvo!');
+            console.log(`Game saved to ${fileName}`);
+            return fileName;
         } catch (error) {
             console.error('Save failed:', error);
-            this.showSaveNotification('Erro ao salvar o jogo!', 'error');
+            this.showSaveNotification('Erro ao salvar!', 'error');
             return null;
         }
     }
 
     async loadGame(fileName) {
         try {
-            const response = await fetch(`/api/load-game/${fileName}`);
-            const result = await response.json();
-
-            if (result.success && this.validateSaveData(result.data)) {
-                window.gameState.loadSaveData(result.data);
+            const saveDataString = localStorage.getItem(`evelly_save_${fileName}`);
+            
+            if (!saveDataString) {
+                throw new Error('Save file not found');
+            }
+            
+            const saveData = JSON.parse(saveDataString);
+            
+            if (this.validateSaveData(saveData)) {
+                window.gameState.loadSaveData(saveData);
 
                 // Reload appropriate chapter/scene
-                await this.loadChapterScene(result.data.chapter, result.data.scene);
+                await this.loadChapterScene(saveData.chapter, saveData.scene);
 
-                this.showSaveNotification('Jogo carregado com sucesso!');
+                this.showSaveNotification('Jogo carregado!');
                 console.log(`Game loaded from ${fileName}`);
 
                 return true;
             } else {
-                throw new Error(result.error || 'Invalid save data');
+                throw new Error('Invalid save data');
             }
         } catch (error) {
             console.error('Load failed:', error);
-            this.showSaveNotification('Erro ao carregar o jogo!', 'error');
+            this.showSaveNotification('Erro ao carregar!', 'error');
             return false;
         }
     }
 
     async getSaveList() {
         try {
-            const response = await fetch('/api/get-saves');
-            const result = await response.json();
-
-            if (result.success) {
-                const saveDetails = [];
-
-                for (const save of result.saves) {
+            const saveDetails = [];
+            
+            // Get all saves from localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('evelly_save_')) {
                     try {
-                        const loadResponse = await fetch(`/api/load-game/${save.fileName}`);
-                        const loadResult = await loadResponse.json();
+                        const fileName = key.replace('evelly_save_', '');
+                        const saveDataString = localStorage.getItem(key);
+                        const saveData = JSON.parse(saveDataString);
                         
-                        if (loadResult.success && this.validateSaveData(loadResult.data)) {
+                        if (this.validateSaveData(saveData)) {
                             saveDetails.push({
-                                fileName: save.fileName,
-                                ...this.extractSaveInfo(loadResult.data)
+                                fileName: fileName,
+                                ...this.extractSaveInfo(saveData)
                             });
                         }
                     } catch (error) {
-                        console.warn(`Failed to load save info for ${save.fileName}:`, error);
+                        console.warn(`Failed to load save info for ${key}:`, error);
                     }
                 }
-
-                // Sort by timestamp (newest first)
-                return saveDetails.sort((a, b) => b.timestamp - a.timestamp);
-            } else {
-                throw new Error(result.error);
             }
+
+            // Sort by timestamp (newest first)
+            return saveDetails.sort((a, b) => b.timestamp - a.timestamp);
         } catch (error) {
             console.error('Failed to get save list:', error);
             return [];
@@ -207,38 +200,38 @@ class SaveSystem {
         };
     }
 
-    async quickSave() {
-        await this.saveGame(this.quickSaveSlot);
+    quickSave() {
+        this.saveGame(this.quickSaveSlot);
+        this.showSaveNotification('Quick Save!');
     }
 
     async quickLoad() {
-        const success = await this.loadGame(`${this.quickSaveSlot}.json`);
+        const success = await this.loadGame(this.quickSaveSlot);
         if (!success) {
             this.showSaveNotification('Nenhum quick save encontrado!', 'warning');
         }
     }
 
-    async autoSave() {
+    autoSave() {
         // Only auto-save at significant points
         if (window.gameState.autoSaveEnabled) {
-            await this.saveGame(this.autoSaveSlot);
+            this.saveGame(this.autoSaveSlot);
         }
     }
 
     async loadChapterScene(chapter, scene) {
-        // This will be implemented when chapter system is ready
         console.log(`Loading Chapter ${chapter}, Scene ${scene}`);
 
-        // For now, just update the UI
+        // Update game state
         window.gameState.currentChapter = chapter;
         window.gameState.currentScene = scene;
 
-        // Show loading screen while transitioning
-        this.showLoadingScreen(true);
-
-        setTimeout(() => {
-            this.showLoadingScreen(false);
-        }, 2000);
+        // Use game controller to load chapter
+        if (window.gameController && window.gameController.loadChapter) {
+            await window.gameController.loadChapter(chapter);
+        } else {
+            console.error('GameController not available for chapter loading');
+        }
     }
 
     showSaveNotification(message, type = 'success') {

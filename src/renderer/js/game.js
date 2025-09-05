@@ -63,8 +63,8 @@ class GameController {
                 module: null
             },
             3: {
-                name: 'A Névoa Vermelha',
-                scenes: 12,
+                name: 'A Tragédia Esquecida',
+                scenes: 5,
                 module: null
             },
             4: {
@@ -153,9 +153,10 @@ class GameController {
         window.menuSystem?.showScreen('loading-screen');
 
         try {
-            // Wait for Chapter1 to be available
+            // Wait for Chapter to be available
             let attempts = 0;
-            while (!window.Chapter1 && attempts < 50) {
+            const chapterClass = `Chapter${chapterNumber}`;
+            while (!window[chapterClass] && attempts < 50) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
             }
@@ -167,6 +168,9 @@ class GameController {
             } else if (chapterNumber === 2 && window.Chapter2) {
                 chapter.module = new window.Chapter2();
                 console.log('Chapter 2 module created successfully');
+            } else if (chapterNumber === 3 && window.Chapter3) {
+                chapter.module = new window.Chapter3();
+                console.log('Chapter 3 module created successfully');
             } else {
                 throw new Error(`Chapter ${chapterNumber} module not found after waiting`);
             }

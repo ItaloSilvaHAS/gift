@@ -1396,7 +1396,7 @@ class Chapter2 {
     finishChapter2() {
         // Auto-save
         window.gameState.progressToNextChapter();
-        window.saveSystem.autoSave();
+        window.saveSystem?.autoSave();
         
         const chapterEndDialogue = {
             speaker: '',
@@ -1423,9 +1423,15 @@ class Chapter2 {
             
             setTimeout(() => {
                 if (choiceIndex === 0) {
-                    // Continuar para Capítulo 3 (quando implementado)
-                    alert('Capítulo 3 será implementado em breve!');
-                    window.menuSystem?.showScreen('main-menu');
+                    // Continuar para Capítulo 3
+                    console.log('Trying to load Chapter 3...');
+                    if (window.gameController && window.gameController.loadChapter) {
+                        console.log('GameController found, loading chapter...');
+                        window.gameController.loadChapter(3);
+                    } else {
+                        console.error('GameController não encontrado!', window.gameController);
+                        window.menuSystem?.showScreen('main-menu');
+                    }
                 } else {
                     window.menuSystem?.showScreen('main-menu');
                 }

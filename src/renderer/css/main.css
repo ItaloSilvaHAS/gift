@@ -30,11 +30,20 @@ body {
 
 /* ============ MAIN MENU ============ */
 #main-menu {
-    background: 
-        linear-gradient(45deg, #000 25%, #1a0000 25%, #1a0000 50%, #000 50%, #000 75%, #1a0000 75%),
-        radial-gradient(circle at 50% 50%, #330000 0%, #000 70%);
-    background-size: 20px 20px, 100% 100%;
-    animation: blood-pulse 3s infinite;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+#main-menu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(20, 0, 0, 0.3) 100%);
+    z-index: 1;
 }
 
 .blood-overlay {
@@ -70,15 +79,15 @@ body {
 
 .game-title {
     font-family: 'Nosifer', cursive;
-    font-size: 4rem;
-    color: #ff0000;
+    font-size: clamp(3rem, 8vw, 6rem);
+    color: #fff;
     text-shadow: 
-        0 0 10px #ff0000,
-        0 0 20px #ff0000,
-        0 0 30px #ff0000,
-        3px 3px 0px #000;
-    margin-bottom: 1rem;
+        0 0 10px rgba(255, 0, 0, 0.5),
+        0 2px 0 #444;
+    margin-bottom: 3rem;
     position: relative;
+    opacity: 0.9;
+    letter-spacing: 4px;
 }
 
 .glitch {
@@ -128,23 +137,21 @@ body {
 
 .menu-btn {
     position: relative;
-    background: linear-gradient(45deg, #2a2a2a, #444);
-    border: 3px solid #888;
-    color: #ffffff;
-    padding: 18px 45px;
-    font-size: 1.2rem;
+    background: transparent;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 1.2rem 4rem;
+    font-size: 1rem;
     font-family: 'Orbitron', monospace;
-    font-weight: 700;
+    font-weight: 300;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     text-transform: uppercase;
-    min-width: 220px;
+    letter-spacing: 3px;
+    min-width: 280px;
+    text-align: center;
     overflow: hidden;
-    text-shadow: 
-        1px 1px 0px #000,
-        0 0 5px rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
 }
 
 .menu-btn:hover {
@@ -192,10 +199,79 @@ body {
 }
 
 .load-container, .options-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 5vh auto;
     padding: 2rem;
     text-align: center;
+}
+
+/* === SELETOR DE CAPÍTULOS === */
+.chapter-selector {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.chapter-selector h3 {
+    font-family: 'Nosifer', cursive;
+    font-size: 1.5rem;
+    color: #ff6666;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.chapter-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.chapter-btn {
+    background: linear-gradient(135deg, #1a1a1a, #333);
+    border: 2px solid #666;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', monospace;
+    min-width: 180px;
+    text-align: center;
+}
+
+.chapter-btn:hover {
+    border-color: #ff6666;
+    background: linear-gradient(135deg, #2a0000, #4a1111);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 102, 102, 0.3);
+}
+
+.chapter-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff6666;
+    margin-bottom: 0.5rem;
+}
+
+.chapter-title {
+    display: block;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.saved-games-section {
+    width: 100%;
+}
+
+.saved-games-section h3 {
+    font-family: 'Nosifer', cursive;
+    font-size: 1.3rem;
+    color: #ff6666;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .load-container h2, .options-container h2 {

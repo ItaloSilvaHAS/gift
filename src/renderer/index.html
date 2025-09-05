@@ -49,9 +49,34 @@
         <div id="load-menu" class="screen">
             <div class="load-container">
                 <h2>CARREGAR JOGO</h2>
-                <div id="saves-list" class="saves-list">
-                    <!-- Saves serão carregados dinamicamente -->
+                
+                <!-- Seleção Rápida de Capítulos -->
+                <div class="chapter-selector">
+                    <h3>COMEÇAR CAPÍTULO</h3>
+                    <div class="chapter-buttons">
+                        <button class="chapter-btn" data-chapter="1">
+                            <span class="chapter-number">1</span>
+                            <span class="chapter-title">O Despertar</span>
+                        </button>
+                        <button class="chapter-btn" data-chapter="2">
+                            <span class="chapter-number">2</span>
+                            <span class="chapter-title">O Setor das Vozes</span>
+                        </button>
+                        <button class="chapter-btn" data-chapter="3">
+                            <span class="chapter-number">3</span>
+                            <span class="chapter-title">A Tragédia Esquecida</span>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Lista de Saves -->
+                <div class="saved-games-section">
+                    <h3>JOGOS SALVOS</h3>
+                    <div id="saves-list" class="saves-list">
+                        <!-- Saves serão carregados dinamicamente -->
+                    </div>
+                </div>
+                
                 <button id="back-to-menu" class="menu-btn">VOLTAR</button>
             </div>
         </div>
@@ -144,8 +169,9 @@
     <script src="js/save-system.js"></script>
     <!-- Load chapters before main systems -->
     <script src="../chapters/chapter1.js"></script>
+    <script src="../chapters/chapter2.js"></script>
+    <script src="../chapters/chapter3.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/game.js"></script>
-    <script src="../chapters/chapter2.js"></script>
 </body>
 </html>

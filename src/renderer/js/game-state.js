@@ -232,11 +232,8 @@ class GameState {
     async autoSave() {
         if (!this.autoSaveEnabled) return;
         
-        const saveData = this.createSaveData();
-        const { ipcRenderer } = require('electron');
-        
         try {
-            await ipcRenderer.invoke('save-game', saveData);
+            await window.saveSystem?.autoSave();
             console.log('Auto-save completed');
         } catch (error) {
             console.error('Auto-save failed:', error);
