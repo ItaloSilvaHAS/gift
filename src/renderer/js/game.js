@@ -20,6 +20,11 @@ class GameController {
         // Preload critical assets
         await this.preloadAssets();
         
+        // Ensure macabre music is playing
+        setTimeout(() => {
+            window.audioManager?.ensureMacabreMusicPlaying();
+        }, 2000);
+        
         this.isInitialized = true;
         console.log('Evelly Adventure initialized successfully!');
     }

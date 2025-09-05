@@ -123,7 +123,14 @@ class Chapter2 {
     // ====== SISTEMA DE MUDANÇA DE FUNDO ======
     changeBackground(backgroundName, transition = 'fade') {
         const background = document.getElementById('background');
-        const imagePath = `assets/images/backgrounds/${backgroundName}.jpg`;
+        
+        // Suporte para diferentes formatos de imagem
+        let imagePath;
+        if (backgroundName === 'fundocena2') {
+            imagePath = `assets/images/backgrounds/fundocena2.avif`;
+        } else {
+            imagePath = `assets/images/backgrounds/${backgroundName}.jpg`;
+        }
         
         if (transition === 'fade') {
             background.style.transition = 'opacity 1s ease';
@@ -131,10 +138,14 @@ class Chapter2 {
             
             setTimeout(() => {
                 background.style.backgroundImage = `url(${imagePath})`;
+                background.style.backgroundSize = 'cover';
+                background.style.backgroundPosition = 'center';
                 background.style.opacity = '1';
             }, 500);
         } else {
             background.style.backgroundImage = `url(${imagePath})`;
+            background.style.backgroundSize = 'cover';
+            background.style.backgroundPosition = 'center';
         }
     }
 
@@ -200,14 +211,15 @@ class Chapter2 {
 
         window.dialogueSystem.showDialogue(narrativeDialogue);
         
-        setTimeout(() => {
+        // Espera clique do usuário
+        window.dialogueSystem.setNextAction(() => {
             this.showSectorDescription();
-        }, 6000);
+        });
     }
 
     showSectorDescription() {
-        // Fundo do Setor das Vozes
-        this.changeBackground('voice_sector_corridor');
+        // Fundo do Setor das Vozes - usando fundocena2.avif
+        this.changeBackground('fundocena2');
         this.startFlickeringLights();
         this.startWaterReflectionEffect();
         
@@ -221,9 +233,10 @@ class Chapter2 {
 
         window.dialogueSystem.showDialogue(sectorDialogue);
         
-        setTimeout(() => {
+        // Espera clique do usuário
+        window.dialogueSystem.setNextAction(() => {
             this.showMicrophonesDetail();
-        }, 7000);
+        });
     }
 
     startFlickeringLights() {

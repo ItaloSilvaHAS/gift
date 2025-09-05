@@ -38,18 +38,26 @@ class SaveSystem {
     }
 
     async saveGame(slotName = null) {
-        const { ipcRenderer } = require('electron');
-
         try {
             const saveData = this.createSaveData();
-            const fileName = slotName || `save_${Date.now()}.json`;
+            
+            const response = await fetch('/api/save-game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(saveData)
+            });
 
-            await ipcRenderer.invoke('save-game', saveData);
-
-            this.showSaveNotification('Jogo salvo com sucesso!');
-            console.log(`Game saved to ${fileName}`);
-
-            return fileName;
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSaveNotification('Jogo salvo com sucesso!');
+                console.log(`Game saved to ${result.fileName}`);
+                return result.fileName;
+            } else {
+                throw new Error(result.error);
+            }
         } catch (error) {
             console.error('Save failed:', error);
             this.showSaveNotification('Erro ao salvar o jogo!', 'error');
@@ -58,23 +66,22 @@ class SaveSystem {
     }
 
     async loadGame(fileName) {
-        const { ipcRenderer } = require('electron');
-
         try {
-            const saveData = await ipcRenderer.invoke('load-game', fileName);
+            const response = await fetch(`/api/load-game/${fileName}`);
+            const result = await response.json();
 
-            if (saveData && this.validateSaveData(saveData)) {
-                window.gameState.loadSaveData(saveData);
+            if (result.success && this.validateSaveData(result.data)) {
+                window.gameState.loadSaveData(result.data);
 
                 // Reload appropriate chapter/scene
-                await this.loadChapterScene(saveData.chapter, saveData.scene);
+                await this.loadChapterScene(result.data.chapter, result.data.scene);
 
                 this.showSaveNotification('Jogo carregado com sucesso!');
                 console.log(`Game loaded from ${fileName}`);
 
                 return true;
             } else {
-                throw new Error('Invalid save data');
+                throw new Error(result.error || 'Invalid save data');
             }
         } catch (error) {
             console.error('Load failed:', error);
@@ -84,28 +91,34 @@ class SaveSystem {
     }
 
     async getSaveList() {
-        const { ipcRenderer } = require('electron');
-
         try {
-            const saves = await ipcRenderer.invoke('get-saves');
-            const saveDetails = [];
+            const response = await fetch('/api/get-saves');
+            const result = await response.json();
 
-            for (const fileName of saves) {
-                try {
-                    const saveData = await ipcRenderer.invoke('load-game', fileName);
-                    if (this.validateSaveData(saveData)) {
-                        saveDetails.push({
-                            fileName,
-                            ...this.extractSaveInfo(saveData)
-                        });
+            if (result.success) {
+                const saveDetails = [];
+
+                for (const save of result.saves) {
+                    try {
+                        const loadResponse = await fetch(`/api/load-game/${save.fileName}`);
+                        const loadResult = await loadResponse.json();
+                        
+                        if (loadResult.success && this.validateSaveData(loadResult.data)) {
+                            saveDetails.push({
+                                fileName: save.fileName,
+                                ...this.extractSaveInfo(loadResult.data)
+                            });
+                        }
+                    } catch (error) {
+                        console.warn(`Failed to load save info for ${save.fileName}:`, error);
                     }
-                } catch (error) {
-                    console.warn(`Failed to load save info for ${fileName}:`, error);
                 }
-            }
 
-            // Sort by timestamp (newest first)
-            return saveDetails.sort((a, b) => b.timestamp - a.timestamp);
+                // Sort by timestamp (newest first)
+                return saveDetails.sort((a, b) => b.timestamp - a.timestamp);
+            } else {
+                throw new Error(result.error);
+            }
         } catch (error) {
             console.error('Failed to get save list:', error);
             return [];

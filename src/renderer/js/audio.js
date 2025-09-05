@@ -28,6 +28,24 @@ class AudioManager {
                 this.bgMusic.play();
             }
         });
+
+        // Start background macabre music automatically
+        setTimeout(() => {
+            this.startMacabreMusic();
+        }, 1000);
+    }
+
+    startMacabreMusic() {
+        // Play the macabre background music that continues throughout the game
+        this.playMusic('background_macabre', true);
+        console.log('Starting macabre background music...');
+    }
+
+    ensureMacabreMusicPlaying() {
+        // Ensure the macabre music is always playing
+        if (!this.currentMusic || this.bgMusic.paused) {
+            this.startMacabreMusic();
+        }
     }
 
     loadSoundLibrary() {
@@ -64,9 +82,15 @@ class AudioManager {
         
         // Define music tracks
         this.musicLibrary = {
+            'background_macabre': { 
+                path: 'assets/audio/music/background_macabre.mp4', 
+                volume: 0.6, 
+                loop: true,
+                fadeIn: true
+            },
             'menu_theme': { 
-                path: 'assets/audio/music/menu_theme.ogg', 
-                volume: 0.8, 
+                path: 'assets/audio/music/background_macabre.mp4', 
+                volume: 0.6, 
                 loop: true,
                 fadeIn: true
             },

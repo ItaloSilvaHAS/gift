@@ -7,6 +7,7 @@ class DialogueSystem {
         this.typewriterSpeed = 30; // ms per character
         this.autoAdvance = false;
         this.autoAdvanceDelay = 3000;
+        this.nextAction = null; // Função para executar no próximo clique/Enter
         
         this.dialogueBox = document.getElementById('dialogue-box');
         this.speakerName = document.querySelector('.speaker-name');
@@ -24,7 +25,14 @@ class DialogueSystem {
             if (this.isTyping) {
                 this.skipTypewriter();
             } else if (this.currentDialogue && this.currentChoices.length === 0) {
-                this.advanceDialogue();
+                if (this.nextAction) {
+                    const action = this.nextAction;
+                    this.nextAction = null;
+                    this.hideDialogue();
+                    action();
+                } else {
+                    this.advanceDialogue();
+                }
             }
         });
 
@@ -36,7 +44,14 @@ class DialogueSystem {
                     if (this.isTyping) {
                         this.skipTypewriter();
                     } else if (this.currentChoices.length === 0) {
-                        this.advanceDialogue();
+                        if (this.nextAction) {
+                            const action = this.nextAction;
+                            this.nextAction = null;
+                            this.hideDialogue();
+                            action();
+                        } else {
+                            this.advanceDialogue();
+                        }
                     }
                     e.preventDefault();
                     break;
@@ -147,12 +162,13 @@ class DialogueSystem {
     }
 
     onTypewriterComplete() {
-        // Auto-advance if no choices
-        if (this.autoAdvance && this.currentChoices.length === 0) {
-            setTimeout(() => {
-                this.advanceDialogue();
-            }, this.autoAdvanceDelay);
-        }
+        // Diálogos agora só avançam com clique/Enter - sem auto-advance
+        // O usuário deve clicar ou apertar Enter para continuar
+    }
+
+    setNextAction(action) {
+        // Define uma função para executar quando o usuário clicar/apertar Enter
+        this.nextAction = action;
     }
 
     calculateTypewriterDuration(text) {

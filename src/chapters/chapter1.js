@@ -215,10 +215,10 @@ class Chapter1 {
 
         window.dialogueSystem.showDialogue(narrativeDialogue);
         
-        // Após 5 segundos, continuar para a próxima parte
-        setTimeout(() => {
+        // Agora espera clique do usuário para continuar
+        window.dialogueSystem.setNextAction(() => {
             this.showEnvironmentDescription();
-        }, 8000);
+        });
     }
 
     showEnvironmentDescription() {
@@ -245,9 +245,10 @@ class Chapter1 {
 
         window.dialogueSystem.showDialogue(environmentDialogue);
         
-        setTimeout(() => {
+        // Espera clique do usuário
+        window.dialogueSystem.setNextAction(() => {
             this.showFloorDetails();
-        }, 7000);
+        });
     }
 
     startFlickeringLights() {
@@ -277,9 +278,10 @@ class Chapter1 {
         // Tocar som de eco assombrado
         window.audioManager?.playSound('distant_whispers');
         
-        setTimeout(() => {
+        // Espera clique do usuário
+        window.dialogueSystem.setNextAction(() => {
             this.introduceEzra();
-        }, 6000);
+        });
     }
 
     introduceEzra() {
@@ -300,9 +302,10 @@ class Chapter1 {
 
         window.dialogueSystem.showDialogue(ezraIntroDialogue);
         
-        setTimeout(() => {
+        // Espera clique do usuário
+        window.dialogueSystem.setNextAction(() => {
             this.ezraThreat();
-        }, 5000);
+        });
     }
 
     ezraThreat() {
@@ -748,30 +751,102 @@ class Chapter1 {
     }
 
     solvePuzzleFailure() {
-        window.audioManager?.playSound('puzzle_failure');
-        
-        const statusEl = document.getElementById('puzzle-status');
-        statusEl.textContent = 'Falhas demais! A névoa está chegando...';
-        
-        // Efeito visual de erro
-        const puzzleContainer = document.querySelector('.puzzle-container');
-        if (puzzleContainer) {
-            puzzleContainer.style.background = 'rgba(100, 0, 0, 0.9)';
-            puzzleContainer.style.animation = 'shake 0.5s ease-in-out';
+        // Remover puzzle imediatamente
+        const puzzleElement = document.getElementById('rhythm-puzzle');
+        if (puzzleElement) {
+            puzzleElement.remove();
         }
         
-        // Trigger da Sombra
-        if (window.gameController) {
-            window.gameController.triggerHorrorEvent('shadow_encounter', 'high');
-        }
+        // JUMPSCARE IMEDIATO!
+        this.showJumpScare();
+    }
+
+    showJumpScare() {
+        // Tocar som alto de susto
+        window.audioManager?.playSound('scream');
         
+        // Criar elemento de jumpscare
+        const jumpscareDiv = document.createElement('div');
+        jumpscareDiv.id = 'jumpscare-screen';
+        jumpscareDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('assets/images/backgrounds/JumpScare1.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: jumpscareFlash 0.1s ease-in-out 0s 3;
+        `;
+        
+        document.body.appendChild(jumpscareDiv);
+        
+        // Efeito de shake na tela
+        document.body.style.animation = 'shake 0.5s ease-in-out';
+        
+        // Após 3 segundos, mostrar game over
         setTimeout(() => {
-            const puzzleElement = document.getElementById('rhythm-puzzle');
-            if (puzzleElement) {
-                puzzleElement.remove();
+            jumpscareDiv.remove();
+            document.body.style.animation = '';
+            this.showGameOver();
+        }, 3000);
+    }
+
+    showGameOver() {
+        // Tela de Game Over
+        const gameOverDiv = document.createElement('div');
+        gameOverDiv.id = 'game-over-screen';
+        gameOverDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(45deg, #000000, #330000);
+            color: #ff0000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Nosifer', cursive;
+            text-align: center;
+        `;
+        
+        gameOverDiv.innerHTML = `
+            <h1 style="font-size: 4rem; margin-bottom: 2rem; text-shadow: 0 0 20px #ff0000;">GAME OVER</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 3rem; font-family: 'Orbitron', monospace;">A Sombra te consumiu...</p>
+            <button id="restart-game" style="
+                background: #660000;
+                color: white;
+                border: 2px solid #ff0000;
+                padding: 1rem 2rem;
+                font-size: 1.2rem;
+                font-family: 'Orbitron', monospace;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">TENTAR NOVAMENTE</button>
+        `;
+        
+        document.body.appendChild(gameOverDiv);
+        
+        // Evento do botão restart
+        document.getElementById('restart-game').addEventListener('click', () => {
+            gameOverDiv.remove();
+            // Reiniciar o capítulo 1
+            window.gameState.currentChapter = 1;
+            window.gameState.currentScene = 1;
+            if (window.gameController && window.gameController.loadChapter) {
+                window.gameController.loadChapter(1);
+            } else {
+                window.location.reload();
             }
-            this.showShadowFailureDialogue();
-        }, 2000);
+        });
     }
 
     showShadowFailureDialogue() {
@@ -875,30 +950,39 @@ class Chapter1 {
     showContinuationMessage() {
         const continuationDialogue = {
             speaker: '',
-            text: 'Fim da Cena 1 do Capítulo 1. As próximas cenas serão implementadas em breve...',
-            choices: [
-                {
-                    text: 'Voltar ao Menu Principal',
-                    type: 'neutral',
-                    nextScene: 'main_menu'
-                }
-            ]
+            text: 'Capítulo 1 completo! A história continua...',
+            effects: [{ type: 'fadeToBlack', duration: 2000 }]
         };
 
         window.dialogueSystem.showDialogue(continuationDialogue);
         
-        // Override para voltar ao menu
-        const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
-        window.dialogueSystem.selectChoice = (choiceIndex) => {
-            originalSelectChoice(choiceIndex);
+        // Transição automática para o Capítulo 2
+        setTimeout(() => {
+            window.dialogueSystem.hideDialogue();
             
+            // Atualizar estado do jogo para o capítulo 2
+            window.gameState.currentChapter = 2;
+            window.gameState.currentScene = 1;
+            
+            // Salvar progresso antes de carregar o próximo capítulo
+            window.saveSystem.autoSave();
+            
+            // Carregar Capítulo 2
             setTimeout(() => {
-                window.menuSystem?.showScreen('main-menu');
-                window.dialogueSystem.hideDialogue();
-            }, 500);
-            
-            window.dialogueSystem.selectChoice = originalSelectChoice;
-        };
+                if (window.gameController && window.gameController.loadChapter) {
+                    window.gameController.loadChapter(2);
+                } else {
+                    // Fallback: tentar inicializar o Capítulo 2 diretamente
+                    if (window.Chapter2) {
+                        const chapter2 = new window.Chapter2();
+                        chapter2.startChapter();
+                    } else {
+                        console.error('Capítulo 2 não encontrado! Voltando ao menu...');
+                        window.menuSystem?.showScreen('main-menu');
+                    }
+                }
+            }, 1000);
+        }, 4000);
     }
 }
 

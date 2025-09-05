@@ -64,8 +64,8 @@ class MenuSystem {
     }
 
     initializeMenu() {
-        // Start menu music
-        window.audioManager?.playMusic('menu_theme');
+        // Ensure macabre music is playing
+        window.audioManager?.ensureMacabreMusicPlaying();
 
         // Load settings
         this.loadSettings();
