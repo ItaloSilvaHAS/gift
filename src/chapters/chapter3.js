@@ -495,12 +495,17 @@ class Chapter3 {
             
             setTimeout(() => {
                 if (choiceIndex === 0) {
-                    this.showPianoInterface();
+                    window.dialogueSystem.hideDialogue();
+                    setTimeout(() => {
+                        this.showPianoInterface();
+                    }, 500);
                 } else {
-                    this.failPianoPuzzle();
+                    window.dialogueSystem.hideDialogue();
+                    setTimeout(() => {
+                        this.startCrucialDialogue();
+                    }, 500);
                 }
-                window.dialogueSystem.hideDialogue();
-            }, 1000);
+            }, 500);
             
             window.dialogueSystem.selectChoice = originalSelectChoice;
         };
@@ -619,8 +624,10 @@ class Chapter3 {
             this.storyFlags.tragicMemoryChoice = choiceIndex;
             
             setTimeout(() => {
-                this.processTragicMemoryChoice(choiceIndex);
                 window.dialogueSystem.hideDialogue();
+                setTimeout(() => {
+                    this.processTragicMemoryChoice(choiceIndex);
+                }, 500);
             }, 500);
             
             window.dialogueSystem.selectChoice = originalSelectChoice;
@@ -654,14 +661,24 @@ class Chapter3 {
         
         window.dialogueSystem.showDialogue(ezraDialogue);
         
-        setTimeout(() => {
-            window.dialogueSystem.hideDialogue();
-            this.addMemoryFragments();
-            
-            setTimeout(() => {
-                this.startFogChase();
-            }, 3000);
-        }, 4000);
+        // Usar nextAction para aguardar clique do usuário
+        window.dialogueSystem.nextAction = () => {
+            this.continueAfterEzraDescription();
+        };
+    }
+    
+    continueAfterEzraDescription() {
+        const continuation = {
+            speaker: '',
+            text: 'As memórias se tornam mais claras. O corredor à frente parece se estender infinitamente, e uma névoa estranha começa a se formar atrás de vocês.',
+            effects: []
+        };
+        
+        window.dialogueSystem.showDialogue(continuation);
+        
+        window.dialogueSystem.nextAction = () => {
+            this.startFogChase();
+        };
     }
 
     startFlashbackSequence() {
@@ -1133,18 +1150,43 @@ class Chapter3 {
         const chaseInterface = document.getElementById('fog-chase-interface');
         if (chaseInterface) chaseInterface.remove();
         
+        this.fogChase.isActive = false;
+        
         const gameOverDialogue = {
             speaker: '',
             text: 'A névoa vermelha os envolve. Vocês sentem suas memórias se dissolvendo, suas formas se desfazendo na névoa viva...',
-            effects: [{ type: 'gameOver' }]
+            effects: [{ type: 'gameOver' }],
+            choices: [
+                {
+                    text: 'Tentar novamente',
+                    type: 'retry'
+                },
+                {
+                    text: 'Voltar ao menu',
+                    type: 'menu'
+                }
+            ]
         };
         
         window.dialogueSystem.showDialogue(gameOverDialogue);
         
-        setTimeout(() => {
-            window.gameState.resetToLastCheckpoint();
-            window.menuSystem.showScreen('main-menu');
-        }, 4000);
+        const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
+        window.dialogueSystem.selectChoice = (choiceIndex) => {
+            originalSelectChoice(choiceIndex);
+            
+            setTimeout(() => {
+                window.dialogueSystem.hideDialogue();
+                if (choiceIndex === 0) {
+                    // Tentar novamente
+                    this.startFogChase();
+                } else {
+                    // Voltar ao menu
+                    window.menuSystem.showScreen('main-menu');
+                }
+            }, 500);
+            
+            window.dialogueSystem.selectChoice = originalSelectChoice;
+        };
     }
 
     escapeFogChase() {
@@ -1444,8 +1486,10 @@ class Chapter3 {
             window.gameState.flags.chapter3Choice = choiceIndex;
             
             setTimeout(() => {
-                this.finishChapter3(choiceIndex);
                 window.dialogueSystem.hideDialogue();
+                setTimeout(() => {
+                    this.finishChapter3(choiceIndex);
+                }, 500);
             }, 500);
             
             window.dialogueSystem.selectChoice = originalSelectChoice;

@@ -330,7 +330,7 @@ class GameController {
     exitCombatMode() {
         this.isInCombat = false;
         document.body.classList.remove('combat-mode');
-        document.body.style.cursor = '';
+        document.body.style.cursor = 'default';
         
         console.log('Combat mode deactivated');
     }
