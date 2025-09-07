@@ -28,11 +28,25 @@ class Chapter1 {
         
         // ====== ARQUIVOS DE PERSONAGENS ======
         // Suporte para PNG e WEBP
-        let imagePath = `assets/images/characters/${characterName}_${expression}.png`;
+        let imagePath = `./assets/images/characters/${characterName}_${expression}.png`;
         
-        // Para Ezra, usar o arquivo webp específico
-        if (characterName === 'ezra' && expression === 'neutral') {
-            imagePath = `assets/images/characters/ezra_neutral.png`;
+        // Mapping específico para cada personagem e suas expressões
+        if (characterName === 'ezra' || characterName === 'erza') {
+            // Mapear expressões da Erza/Ezra
+            const erzaExpressionMap = {
+                'neutral': 'ErzaSpriteCasual.webp',
+                'casual': 'ErzaSpriteCasual.webp',
+                'angry': 'ErzaSprite_angry.webp',
+                'smirk': 'ErzaSprite_smirk.webp',
+                'happy': 'ErzaSprite_happy.webp',
+                'sad': 'ErzaSprite_sad.webp',
+                'surprised': 'ErzaSprite_surprised.webp',
+                'cautious': 'ErzaSpriteCasual.webp', // fallback para casual
+                'nervous': 'ErzaSpriteCasual.webp'   // fallback para casual
+            };
+            
+            const spriteFile = erzaExpressionMap[expression] || 'ErzaSpriteCasual.webp';
+            imagePath = `./assets/images/characters/${spriteFile}`;
         }
         
         charElement.innerHTML = `
@@ -112,29 +126,25 @@ class Chapter1 {
         const charElement = this.currentCharacters[characterName];
         if (charElement) {
             const img = charElement.querySelector('.character-sprite');
-            const newPath = `assets/images/characters/${characterName}_${newExpression}.png`;
+            const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
             img.src = newPath;
         }
     }
 
     // ====== SISTEMA DE MUDANÇA DE FUNDO ======
     changeBackground(backgroundName, transition = 'fade') {
-        // Como usar:
-        // this.changeBackground('hollowmind_corridor');
-        // this.changeBackground('noxhaven_street', 'slide');
-        
         const background = document.getElementById('background');
         
-        // ====== NOMES DOS ARQUIVOS DE FUNDO ======
-        // Coloque as imagens com estes nomes na pasta assets/images/backgrounds/:
-        // hollowmind_corridor.jpg - Corredor do laboratório
-        // noxhaven_street.jpg - Ruas da cidade
-        // laboratory.jpg - Laboratório principal
-        // theater_ruins.jpg - Teatro em ruínas
-        // underground_tunnel.jpg - Túneis subterrâneos
-        // rooftop_night.jpg - Terraço à noite
+        // Map background names to actual filenames
+        const backgroundMap = {
+            'fundocena1': 'fundocena1.jpg',
+            'fundocena2': 'fundocena2.avif',
+            'fundocena3': 'fundocena3.jpeg',
+            'JumpScare1': 'JumpScare1.jpg'
+        };
         
-        const imagePath = `assets/images/backgrounds/${backgroundName}.jpg`;
+        const filename = backgroundMap[backgroundName] || `${backgroundName}.jpg`;
+        const imagePath = `assets/images/backgrounds/${filename}`;
         
         if (transition === 'fade') {
             background.style.transition = 'opacity 1s ease';
@@ -142,10 +152,14 @@ class Chapter1 {
             
             setTimeout(() => {
                 background.style.backgroundImage = `url(${imagePath})`;
+                background.style.backgroundSize = 'cover';
+                background.style.backgroundPosition = 'center';
                 background.style.opacity = '1';
             }, 500);
         } else {
             background.style.backgroundImage = `url(${imagePath})`;
+            background.style.backgroundSize = 'cover';
+            background.style.backgroundPosition = 'center';
         }
     }
 
@@ -224,13 +238,13 @@ class Chapter1 {
     showEnvironmentDescription() {
         // ====== FUNDO ESPECÍFICO DO CAPÍTULO 1 ======
         const background = document.getElementById('background');
-        background.style.backgroundImage = 'url(assets/images/backgrounds/fundocena1.jpg)';
+        background.style.backgroundImage = 'url(./assets/images/backgrounds/fundocena1.jpg)';
         background.style.filter = 'contrast(0.8) brightness(0.6)';
         
         // ====== EXEMPLOS DE OUTRAS IMAGENS DE FUNDO ======
-        // background.style.backgroundImage = 'url(assets/images/backgrounds/noxhaven_street.jpg)';
-        // background.style.backgroundImage = 'url(assets/images/backgrounds/laboratory.jpg)';
-        // background.style.backgroundImage = 'url(assets/images/backgrounds/theater_ruins.jpg)';
+        // background.style.backgroundImage = 'url(./assets/images/backgrounds/noxhaven_street.jpg)';
+        // background.style.backgroundImage = 'url(./assets/images/backgrounds/laboratory.jpg)';
+        // background.style.backgroundImage = 'url(./assets/images/backgrounds/theater_ruins.jpg)';
         
         // Adicionar efeito de luzes piscando
         this.startFlickeringLights();
@@ -722,7 +736,8 @@ class Chapter1 {
         
         failureCountEl.textContent = this.rhythmPuzzle.failures;
         
-        window.audioManager?.playSound('puzzle_error');
+        // JUMPSCARE! Maximum volume horror effect
+        window.audioManager?.playJumpscare('extreme');
         
         if (this.rhythmPuzzle.failures >= this.rhythmPuzzle.maxFailures) {
             this.solvePuzzleFailure();
@@ -757,13 +772,14 @@ class Chapter1 {
             puzzleElement.remove();
         }
         
-        // JUMPSCARE IMEDIATO!
+        // JUMPSCARE IMEDIATO! - Volume máximo para assustar
+        window.audioManager?.playJumpscare('extreme');
         this.showJumpScare();
     }
 
     showJumpScare() {
-        // Tocar som alto de susto
-        window.audioManager?.playSound('scream');
+        // Tocar som de jumpscare no volume MÁXIMO para assustar
+        window.audioManager?.playJumpscare('extreme');
         
         // Criar elemento de jumpscare
         const jumpscareDiv = document.createElement('div');
@@ -774,7 +790,7 @@ class Chapter1 {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('assets/images/backgrounds/JumpScare1.jpg');
+            background-image: url('./assets/images/backgrounds/JumpScare1.jpg');
             background-size: cover;
             background-position: center;
             z-index: 10000;

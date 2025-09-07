@@ -49,7 +49,28 @@ class Chapter3 {
         charElement.id = `char-${characterName}`;
         charElement.className = `character character-${position}`;
         
-        let imagePath = `assets/images/characters/${characterName}_${expression}.png`;
+        let imagePath;
+        
+        // Mapping específico para cada personagem e suas expressões  
+        if (characterName === 'ezra' || characterName === 'erza') {
+            // Mapear expressões da Erza/Ezra
+            const erzaExpressionMap = {
+                'neutral': 'ErzaSpriteCasual.webp',
+                'casual': 'ErzaSpriteCasual.webp',
+                'angry': 'ErzaSprite_angry.webp',
+                'smirk': 'ErzaSprite_smirk.webp',
+                'happy': 'ErzaSprite_happy.webp',
+                'sad': 'ErzaSprite_sad.webp',
+                'surprised': 'ErzaSprite_surprised.webp',
+                'cautious': 'ErzaSpriteCasual.webp', // fallback para casual
+                'nervous': 'ErzaSpriteCasual.webp'   // fallback para casual
+            };
+            
+            const spriteFile = erzaExpressionMap[expression] || 'ErzaSpriteCasual.webp';
+            imagePath = `./assets/images/characters/${spriteFile}`;
+        } else {
+            imagePath = `./assets/images/characters/${characterName}_${expression}.png`;
+        }
         
         charElement.innerHTML = `
             <img src="${imagePath}" 
@@ -121,7 +142,7 @@ class Chapter3 {
         const charElement = this.currentCharacters[characterName];
         if (charElement) {
             const img = charElement.querySelector('.character-sprite');
-            const newPath = `assets/images/characters/${characterName}_${newExpression}.png`;
+            const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
             img.src = newPath;
         }
     }
@@ -129,7 +150,17 @@ class Chapter3 {
     // ====== SISTEMA DE MUDANÇA DE FUNDO ======
     changeBackground(backgroundName, transition = 'fade') {
         const background = document.getElementById('background');
-        const imagePath = `assets/images/backgrounds/${backgroundName}.jpg`;
+        
+        // Map background names to actual filenames
+        const backgroundMap = {
+            'fundocena1': 'fundocena1.jpg',
+            'fundocena2': 'fundocena2.avif',
+            'fundocena3': 'fundocena3.jpeg',
+            'JumpScare1': 'JumpScare1.jpg'
+        };
+        
+        const filename = backgroundMap[backgroundName] || `${backgroundName}.jpg`;
+        const imagePath = `assets/images/backgrounds/${filename}`;
         
         if (transition === 'fade') {
             background.style.transition = 'opacity 1s ease';

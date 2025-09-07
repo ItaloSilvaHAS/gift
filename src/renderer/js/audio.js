@@ -74,22 +74,23 @@ class AudioManager {
             'empty_click': { path: 'assets/audio/sfx/empty_click.ogg', volume: 0.6 },
             
             // Jumpscare sounds
-            'jumpscare_low': { path: 'assets/audio/sfx/jumpscare_low.ogg', volume: 0.6 },
-            'jumpscare_medium': { path: 'assets/audio/sfx/jumpscare_medium.ogg', volume: 0.8 },
-            'jumpscare_high': { path: 'assets/audio/sfx/jumpscare_high.ogg', volume: 1.0 },
-            'jumpscare_extreme': { path: 'assets/audio/sfx/jumpscare_extreme.ogg', volume: 1.0 }
+            'jumpscare': { path: './assets/audio/jumpscare.mp3', volume: 1.0 },
+            'jumpscare_low': { path: './assets/audio/jumpscare.mp3', volume: 0.8 },
+            'jumpscare_medium': { path: './assets/audio/jumpscare.mp3', volume: 0.9 },
+            'jumpscare_high': { path: './assets/audio/jumpscare.mp3', volume: 1.0 },
+            'jumpscare_extreme': { path: './assets/audio/jumpscare.mp3', volume: 1.0 }
         };
         
         // Define music tracks
         this.musicLibrary = {
             'background_macabre': { 
-                path: 'assets/audio/music/background_macabre.mp4', 
+                path: './assets/audio/background_macabre.mp3', 
                 volume: 0.6, 
                 loop: true,
                 fadeIn: true
             },
             'menu_theme': { 
-                path: 'assets/audio/music/background_macabre.mp4', 
+                path: './assets/audio/background_macabre.mp3', 
                 volume: 0.6, 
                 loop: true,
                 fadeIn: true
@@ -313,9 +314,43 @@ class AudioManager {
         }
     }
 
+    playJumpscare(intensity = 'high') {
+        // Play jumpscare at maximum volume - bypass all volume settings for maximum terror effect
+        const originalSfxVolume = this.sfxVolume;
+        const originalMasterVolume = this.masterVolume;
+        
+        // Set volumes to maximum temporarily
+        this.sfxVolume = 1.0;
+        this.masterVolume = 1.0;
+        this.jumpscareAudio.volume = 1.0;
+        
+        // Play the jumpscare sound
+        this.jumpscareAudio.src = './assets/audio/jumpscare.mp3';
+        this.jumpscareAudio.currentTime = 0;
+        
+        const playPromise = this.jumpscareAudio.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log('Jumpscare audio playing at maximum volume!');
+            }).catch(error => {
+                console.error('Failed to play jumpscare:', error);
+            });
+        }
+        
+        // Restore original volumes after a delay
+        setTimeout(() => {
+            this.sfxVolume = originalSfxVolume;
+            this.masterVolume = originalMasterVolume;
+            this.updateVolumes();
+        }, 3000);
+        
+        console.log(`Playing ${intensity} jumpscare at MAXIMUM volume!`);
+    }
+
     preloadAudio() {
-        // Preload critical audio files
-        const criticalSounds = ['jumpscare_medium', 'gunshot', 'scream'];
+        // Preload critical audio files including jumpscare
+        const criticalSounds = ['jumpscare', 'gunshot', 'scream'];
         
         criticalSounds.forEach(soundName => {
             if (this.soundLibrary[soundName]) {
@@ -323,6 +358,10 @@ class AudioManager {
                 audio.preload = 'auto';
             }
         });
+        
+        // Preload jumpscare specifically
+        this.jumpscareAudio.src = './assets/audio/jumpscare.mp3';
+        this.jumpscareAudio.preload = 'auto';
     }
 }
 

@@ -323,7 +323,7 @@ class SaveSystem {
         }
 
         try {
-            const saves = await this.getSaveFiles();
+            const saves = await this.getSaveList();
             savesList.innerHTML = '';
 
             if (saves.length === 0) {
@@ -341,14 +341,14 @@ class SaveSystem {
                 saveItem.className = 'save-item';
                 saveItem.innerHTML = `
                     <div class="save-info">
-                        <h3>${save.name}</h3>
-                        <p>Capítulo ${save.data.chapter}, Cena ${save.data.scene}</p>
-                        <p>Karma: ${save.data.karma}</p>
-                        <small>${new Date(save.data.timestamp).toLocaleString()}</small>
+                        <h3>Save ${index + 1}</h3>
+                        <p>Capítulo ${save.chapter}, Cena ${save.scene}</p>
+                        <p>Karma: ${save.karma}</p>
+                        <small>${save.dateString || new Date(save.timestamp).toLocaleString('pt-BR')}</small>
                     </div>
                     <div class="save-actions">
-                        <button onclick="window.saveSystem.loadGameFromMenu('${save.filename}')" class="load-btn">Carregar</button>
-                        <button onclick="window.saveSystem.deleteSave('${save.filename}')" class="delete-btn">Deletar</button>
+                        <button onclick="window.saveSystem.loadGameFromMenu('${save.fileName}')" class="load-btn">Carregar</button>
+                        <button onclick="window.saveSystem.deleteSave('${save.fileName}')" class="delete-btn">Deletar</button>
                     </div>
                 `;
                 savesList.appendChild(saveItem);
@@ -387,6 +387,19 @@ class SaveSystem {
         } catch (error) {
             console.error('Error loading game from menu:', error);
             window.menuSystem.showNotification('Erro ao carregar o jogo');
+        }
+    }
+
+    deleteSave(fileName) {
+        try {
+            localStorage.removeItem(`evelly_save_${fileName}`);
+            this.showSaveNotification('Save deletado com sucesso!');
+            
+            // Refresh the save list
+            this.populateSaveSlots();
+        } catch (error) {
+            console.error('Error deleting save:', error);
+            this.showSaveNotification('Erro ao deletar save!', 'error');
         }
     }
 
