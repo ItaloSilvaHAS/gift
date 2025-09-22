@@ -68,9 +68,13 @@ class GameController {
                 module: null
             },
             4: {
-                name: 'Ecos do Passado',
-                scenes: 9,
-                module: null
+                name: 'Fragmentos da Verdade',
+                scenes: 4,
+                module: null,
+                routes: {
+                    cathedral: 'Aceitar o Chamado',
+                    hospital: 'Rejeitar o Chamado'
+                }
             },
             5: {
                 name: 'O Confronto Final',
@@ -171,6 +175,10 @@ class GameController {
             } else if (chapterNumber === 3 && window.Chapter3) {
                 chapter.module = new window.Chapter3();
                 console.log('Chapter 3 module created successfully');
+            } else if (chapterNumber === 4) {
+                // Capítulo 4 tem duas rotas baseadas nas escolhas do jogador
+                await this.loadChapter4Route();
+                return true;
             } else {
                 throw new Error(`Chapter ${chapterNumber} module not found after waiting`);
             }
@@ -464,6 +472,155 @@ class GameController {
                 this.shadowEncounter('high');
                 break;
         }
+    }
+
+    // ====== MÉTODO PARA CARREGAR ROTAS DO CAPÍTULO 4 ======
+    async loadChapter4Route() {
+        console.log('Loading Chapter 4 with route selection...');
+        
+        const chapter = this.chapters[4];
+        
+        // Determinar qual rota carregar baseado nas escolhas do jogador
+        // Se ainda não há escolha feita, apresentar seleção de rota
+        let selectedRoute = window.gameState.flags.chapter4Route;
+        
+        if (!selectedRoute) {
+            selectedRoute = await this.presentRouteChoice();
+        }
+        
+        // Aguardar módulos estarem disponíveis
+        let attempts = 0;
+        while ((!window.Chapter4Rota1 || !window.Chapter4Rota2) && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        // Carregar a rota apropriada
+        if (selectedRoute === 'cathedral' && window.Chapter4Rota1) {
+            chapter.module = new window.Chapter4Rota1();
+            console.log('Chapter 4 Rota 1 (Cathedral) module created successfully');
+        } else if (selectedRoute === 'hospital' && window.Chapter4Rota2) {
+            chapter.module = new window.Chapter4Rota2();
+            console.log('Chapter 4 Rota 2 (Hospital) module created successfully');
+        } else {
+            throw new Error(`Chapter 4 route module not found: ${selectedRoute}`);
+        }
+        
+        // Set current chapter
+        this.currentChapter = 4;
+        window.gameState.currentChapter = 4;
+        window.gameState.currentScene = 1;
+        
+        // Apply chapter-specific settings
+        this.applyChapterSettings(chapter);
+        
+        // Hide loading screen and show game
+        window.menuSystem?.showGameScreen();
+        
+        // Start the chapter
+        if (chapter.module && chapter.module.start) {
+            await chapter.module.start();
+        } else {
+            throw new Error('Chapter 4 module start method not found');
+        }
+    }
+    
+    async presentRouteChoice() {
+        return new Promise((resolve) => {
+            // Criar interface de escolha de rota
+            const routeChoiceDiv = document.createElement('div');
+            routeChoiceDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: linear-gradient(135deg, #4B0082, #000);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                font-family: 'Orbitron', monospace;
+                color: white;
+            `;
+            
+            routeChoiceDiv.innerHTML = `
+                <h1 style="font-size: 3rem; margin-bottom: 2rem; color: #FFD700; text-shadow: 0 0 20px #FFD700;">
+                    CAPÍTULO 4
+                </h1>
+                <h2 style="font-size: 1.8rem; margin-bottom: 1rem; text-align: center;">
+                    Fragmentos da Verdade
+                </h2>
+                <p style="font-size: 1.2rem; margin-bottom: 3rem; text-align: center; max-width: 600px; line-height: 1.6;">
+                    A partir daqui, a história se divide em dois caminhos principais. Sua escolha muda completamente a narrativa, inimigos, puzzles e revelações.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+                    <div class="route-option" data-route="cathedral" 
+                         style="background: rgba(139, 0, 139, 0.3); border: 2px solid #8B008B; 
+                                border-radius: 15px; padding: 2rem; cursor: pointer; 
+                                transition: all 0.3s; text-align: center; min-width: 300px;">
+                        <h3 style="color: #FF69B4; font-size: 1.8rem; margin-bottom: 1rem;">🔴 ROTA A</h3>
+                        <h4 style="color: #FFD700; font-size: 1.4rem; margin-bottom: 1rem;">Aceitar o Chamado</h4>
+                        <p style="font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;">
+                            Seguir a direção das vozes e da sombra para uma catedral abandonada.
+                        </p>
+                        <p style="font-size: 0.9rem; color: #DDA0DD;">
+                            Mecânicas: Puzzle dos Ecos, Caixas de Música, Sistema de Palco
+                        </p>
+                    </div>
+                    
+                    <div class="route-option" data-route="hospital" 
+                         style="background: rgba(0, 100, 0, 0.3); border: 2px solid #006400; 
+                                border-radius: 15px; padding: 2rem; cursor: pointer; 
+                                transition: all 0.3s; text-align: center; min-width: 300px;">
+                        <h3 style="color: #90EE90; font-size: 1.8rem; margin-bottom: 1rem;">🔵 ROTA B</h3>
+                        <h4 style="color: #FFD700; font-size: 1.4rem; margin-bottom: 1rem;">Rejeitar o Chamado</h4>
+                        <p style="font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;">
+                            Ignorar as vozes e fugir da sombra para um hospital abandonado.
+                        </p>
+                        <p style="font-size: 0.9rem; color: #98FB98;">
+                            Mecânicas: Cirurgia do Coração, Registros Médicos, Batimento Cardíaco
+                        </p>
+                    </div>
+                </div>
+                
+                <p style="color: #FFD700; font-size: 1.1rem; text-align: center; margin-bottom: 1rem;">
+                    Escolha sua rota - você não poderá voltar atrás!
+                </p>
+            `;
+            
+            document.body.appendChild(routeChoiceDiv);
+            
+            // Adicionar event listeners
+            const routeOptions = routeChoiceDiv.querySelectorAll('.route-option');
+            routeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const route = option.dataset.route;
+                    window.gameState.flags.chapter4Route = route;
+                    
+                    // Feedback visual
+                    option.style.transform = 'scale(1.1)';
+                    option.style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.8)';
+                    
+                    setTimeout(() => {
+                        routeChoiceDiv.remove();
+                        resolve(route);
+                    }, 1000);
+                });
+                
+                option.addEventListener('mouseenter', () => {
+                    option.style.transform = 'scale(1.05)';
+                    option.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+                });
+                
+                option.addEventListener('mouseleave', () => {
+                    option.style.transform = 'scale(1)';
+                    option.style.boxShadow = 'none';
+                });
+            });
+        });
     }
 }
 
