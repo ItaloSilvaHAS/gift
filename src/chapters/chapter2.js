@@ -48,18 +48,19 @@ class Chapter2 {
         if (characterName === 'ezra' || characterName === 'erza') {
             // Mapear expressões da Erza/Ezra
             const erzaExpressionMap = {
-                'neutral': 'ErzaSpriteCasual.webp',
-                'casual': 'ErzaSpriteCasual.webp',
+                'neutral': 'ErzaSprite_happy.webp',
+                'casual': 'ErzaSprite_happy.webp',
                 'angry': 'ErzaSprite_angry.webp',
                 'smirk': 'ErzaSprite_smirk.webp',
                 'happy': 'ErzaSprite_happy.webp',
-                'sad': 'ErzaSprite_sad.webp',
-                'surprised': 'ErzaSprite_surprised.webp',
-                'cautious': 'ErzaSpriteCasual.webp', // fallback para casual
-                'nervous': 'ErzaSpriteCasual.webp'   // fallback para casual
+                'sad': 'ErzaSprite_angry.webp',
+                'surprised': 'ErzaSprite_happy.webp',
+                'cautious': 'ErzaSprite_smirk.webp', // usando smirk como fallback
+                'nervous': 'ErzaSprite_angry.webp',   // usando angry como fallback
+                'uncomfortable': 'ErzaSprite_angry.webp' // novo mapeamento
             };
             
-            const spriteFile = erzaExpressionMap[expression] || 'ErzaSpriteCasual.webp';
+            const spriteFile = erzaExpressionMap[expression] || 'ErzaSprite_happy.webp';
             imagePath = `./assets/images/characters/${spriteFile}`;
         } else {
             imagePath = `./assets/images/characters/${characterName}_${expression}.png`;
@@ -91,8 +92,10 @@ class Chapter2 {
         element.style.cssText = `
             position: absolute;
             bottom: 30%;
-            z-index: 5;
+            z-index: 15;
             max-height: 70vh;
+            display: block;
+            visibility: visible;
         `;
         
         switch(position) {
@@ -136,8 +139,30 @@ class Chapter2 {
         const charElement = this.currentCharacters[characterName];
         if (charElement) {
             const img = charElement.querySelector('.character-sprite');
-            const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
-            img.src = newPath;
+            
+            // Mapear expressões especiais para Erza
+            if (characterName === 'ezra' || characterName === 'erza') {
+                const erzaExpressionMap = {
+                    'neutral': 'ErzaSprite_happy.webp',
+                    'casual': 'ErzaSprite_happy.webp',
+                    'angry': 'ErzaSprite_angry.webp',
+                    'smirk': 'ErzaSprite_smirk.webp',
+                    'happy': 'ErzaSprite_happy.webp',
+                    'sad': 'ErzaSprite_angry.webp',
+                    'surprised': 'ErzaSprite_happy.webp',
+                    'cautious': 'ErzaSprite_smirk.webp',
+                    'nervous': 'ErzaSprite_angry.webp',
+                    'uncomfortable': 'ErzaSprite_angry.webp'
+                };
+                
+                const spriteFile = erzaExpressionMap[newExpression] || 'ErzaSprite_happy.webp';
+                const newPath = `./assets/images/characters/${spriteFile}`;
+                img.src = newPath;
+                console.log(`Changed Erza expression to ${newExpression} using ${spriteFile}`);
+            } else {
+                const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
+                img.src = newPath;
+            }
         }
     }
 
@@ -185,8 +210,8 @@ class Chapter2 {
         gameScreen.classList.remove('chapter-1');
         gameScreen.classList.add('chapter-2');
         
-        // Música ambiente mais tensa
-        window.audioManager?.playMusic('voice_sector_ambient', true);
+        // Manter música macabra tocando durante o capítulo
+        window.audioManager?.ensureMacabreMusicPlaying();
     }
 
     // ====== CENA 1: ENTRADA NO SETOR DAS VOZES ======
@@ -1006,17 +1031,21 @@ class Chapter2 {
         if (this.voicePuzzle.failures >= this.voicePuzzle.maxFailures) {
             statusEl.textContent = 'Falhas demais! A Sombra está chegando...';
             
-            setTimeout(() => {
+            // Jumpscare intenso para falha final
+            window.gameController.showRandomJumpscare(2000, () => {
                 document.getElementById('voice-puzzle').remove();
                 this.triggerShadowEncounter();
-            }, 2000);
+            });
         } else {
             statusEl.textContent = 'Senha incorreta! Escute as vozes novamente...';
+            
+            // Jumpscare leve para erro
+            window.gameController.showRandomJumpscare(800);
             
             setTimeout(() => {
                 puzzleContainer.style.background = 'rgba(20, 20, 20, 0.95)';
                 puzzleContainer.style.animation = '';
-            }, 1000);
+            }, 1800);
         }
     }
 

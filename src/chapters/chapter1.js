@@ -34,18 +34,18 @@ class Chapter1 {
         if (characterName === 'ezra' || characterName === 'erza') {
             // Mapear expressões da Erza/Ezra
             const erzaExpressionMap = {
-                'neutral': 'ErzaSpriteCasual.webp',
-                'casual': 'ErzaSpriteCasual.webp',
+                'neutral': 'ErzaSprite_happy.webp',
+                'casual': 'ErzaSprite_happy.webp',
                 'angry': 'ErzaSprite_angry.webp',
                 'smirk': 'ErzaSprite_smirk.webp',
                 'happy': 'ErzaSprite_happy.webp',
-                'sad': 'ErzaSprite_sad.webp',
-                'surprised': 'ErzaSprite_surprised.webp',
-                'cautious': 'ErzaSpriteCasual.webp', // fallback para casual
-                'nervous': 'ErzaSpriteCasual.webp'   // fallback para casual
+                'sad': 'ErzaSprite_angry.webp', // usando angry como fallback
+                'surprised': 'ErzaSprite_happy.webp', // usando happy como fallback
+                'cautious': 'ErzaSprite_smirk.webp', // usando smirk como fallback
+                'nervous': 'ErzaSprite_angry.webp'   // usando angry como fallback
             };
             
-            const spriteFile = erzaExpressionMap[expression] || 'ErzaSpriteCasual.webp';
+            const spriteFile = erzaExpressionMap[expression] || 'ErzaSprite_happy.webp';
             imagePath = `./assets/images/characters/${spriteFile}`;
         }
         
@@ -78,8 +78,10 @@ class Chapter1 {
         element.style.cssText = `
             position: absolute;
             bottom: 30%;
-            z-index: 5;
+            z-index: 15;
             max-height: 70vh;
+            display: block;
+            visibility: visible;
         `;
         
         switch(position) {
@@ -103,8 +105,12 @@ class Chapter1 {
                 max-width: 400px;
                 object-fit: contain;
                 filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+                display: block;
+                visibility: visible;
             `;
         }
+        
+        console.log(`Character ${element.id} positioned at ${position} with z-index 15`);
     }
 
     hideCharacter(characterName) {
@@ -126,8 +132,29 @@ class Chapter1 {
         const charElement = this.currentCharacters[characterName];
         if (charElement) {
             const img = charElement.querySelector('.character-sprite');
-            const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
-            img.src = newPath;
+            
+            // Mapear expressões especiais para Erza
+            if (characterName === 'ezra' || characterName === 'erza') {
+                const erzaExpressionMap = {
+                    'neutral': 'ErzaSprite_happy.webp',
+                    'casual': 'ErzaSprite_happy.webp', 
+                    'angry': 'ErzaSprite_angry.webp',
+                    'smirk': 'ErzaSprite_smirk.webp',
+                    'happy': 'ErzaSprite_happy.webp',
+                    'sad': 'ErzaSprite_angry.webp',
+                    'surprised': 'ErzaSprite_happy.webp',
+                    'cautious': 'ErzaSprite_smirk.webp',
+                    'nervous': 'ErzaSprite_angry.webp'
+                };
+                
+                const spriteFile = erzaExpressionMap[newExpression] || 'ErzaSprite_happy.webp';
+                const newPath = `./assets/images/characters/${spriteFile}`;
+                img.src = newPath;
+                console.log(`Changed Erza expression to ${newExpression} using ${spriteFile}`);
+            } else {
+                const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
+                img.src = newPath;
+            }
         }
     }
 
@@ -177,8 +204,8 @@ class Chapter1 {
         const gameScreen = document.getElementById('game-screen');
         gameScreen.classList.add('chapter-1');
         
-        // Música ambiente do capítulo
-        window.audioManager?.playMusic('hollow_mind_ambient', true);
+        // Manter música macabra tocando durante o capítulo
+        window.audioManager?.ensureMacabreMusicPlaying();
     }
 
     // Cena 1: Despertar
@@ -744,11 +771,14 @@ class Chapter1 {
         } else {
             statusEl.textContent = 'Erro! Tente novamente...';
             
+            // Jumpscare menor para erro não fatal
+            window.gameController.showRandomJumpscare(1000);
+            
             // Mostrar padrão novamente
             setTimeout(() => {
                 this.rhythmPuzzle.isShowingPattern = true;
                 this.showRhythmPattern();
-            }, 1500);
+            }, 2500);
         }
     }
 
@@ -772,9 +802,10 @@ class Chapter1 {
             puzzleElement.remove();
         }
         
-        // JUMPSCARE IMEDIATO! - Volume máximo para assustar
-        window.audioManager?.playJumpscare('extreme');
-        this.showJumpScare();
+        // JUMPSCARE IMEDIATO! - Volume máximo para assustar com imagem aleatória
+        window.gameController.showRandomJumpscare(3000, () => {
+            this.showGameOver();
+        });
     }
 
     showJumpScare() {

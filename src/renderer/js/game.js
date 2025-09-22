@@ -48,6 +48,9 @@ class GameController {
         
         // Set up automatic systems
         this.setupAutoSystems();
+        
+        // Initialize jumpscare system
+        this.setupJumpscareSystem();
     }
 
     setupChapterSystem() {
@@ -106,6 +109,66 @@ class GameController {
             solvedPuzzles: [],
             failedAttempts: 0
         };
+    }
+
+    setupJumpscareSystem() {
+        // Lista de imagens de jumpscare disponíveis
+        this.jumpscareImages = [
+            'jp (1).jpg',
+            'jp (2).jpg',
+            'jp (3).jpg',
+            'jp (4).jpg',
+            'jp (5).jpg',
+            'jp (6).jpg',
+            'jp (7).jpg',
+            'jp (8).jpg',
+            'jp (9).jpg',
+            'jp (10).jpg',
+            'jp (11).jpg'
+        ];
+    }
+
+    // Sistema global de jumpscare que escolhe uma imagem aleatória
+    showRandomJumpscare(duration = 3000, callback = null) {
+        // Escolher imagem aleatória
+        const randomIndex = Math.floor(Math.random() * this.jumpscareImages.length);
+        const jumpscareImage = this.jumpscareImages[randomIndex];
+        
+        // Tocar som de jumpscare no volume MÁXIMO
+        window.audioManager?.playJumpscare('extreme');
+        
+        // Criar elemento de jumpscare
+        const jumpscareDiv = document.createElement('div');
+        jumpscareDiv.id = 'jumpscare-screen';
+        jumpscareDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('./assets/images/backgrounds/${jumpscareImage}');
+            background-size: cover;
+            background-position: center;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: jumpscareFlash 0.1s ease-in-out 0s 3;
+        `;
+        
+        document.body.appendChild(jumpscareDiv);
+        
+        // Efeito de shake na tela
+        document.body.style.animation = 'shake 0.5s ease-in-out';
+        
+        // Remover após o tempo especificado
+        setTimeout(() => {
+            jumpscareDiv.remove();
+            document.body.style.animation = '';
+            if (callback) callback();
+        }, duration);
+        
+        console.log(`Jumpscare! Usando imagem: ${jumpscareImage}`);
     }
 
     setupAutoSystems() {

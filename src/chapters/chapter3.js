@@ -55,18 +55,18 @@ class Chapter3 {
         if (characterName === 'ezra' || characterName === 'erza') {
             // Mapear expressões da Erza/Ezra
             const erzaExpressionMap = {
-                'neutral': 'ErzaSpriteCasual.webp',
-                'casual': 'ErzaSpriteCasual.webp',
+                'neutral': 'ErzaSprite_happy.webp',
+                'casual': 'ErzaSprite_happy.webp',
                 'angry': 'ErzaSprite_angry.webp',
                 'smirk': 'ErzaSprite_smirk.webp',
                 'happy': 'ErzaSprite_happy.webp',
-                'sad': 'ErzaSprite_sad.webp',
-                'surprised': 'ErzaSprite_surprised.webp',
-                'cautious': 'ErzaSpriteCasual.webp', // fallback para casual
-                'nervous': 'ErzaSpriteCasual.webp'   // fallback para casual
+                'sad': 'ErzaSprite_angry.webp',
+                'surprised': 'ErzaSprite_happy.webp',
+                'cautious': 'ErzaSprite_smirk.webp',
+                'nervous': 'ErzaSprite_angry.webp'
             };
             
-            const spriteFile = erzaExpressionMap[expression] || 'ErzaSpriteCasual.webp';
+            const spriteFile = erzaExpressionMap[expression] || 'ErzaSprite_happy.webp';
             imagePath = `./assets/images/characters/${spriteFile}`;
         } else {
             imagePath = `./assets/images/characters/${characterName}_${expression}.png`;
@@ -97,8 +97,10 @@ class Chapter3 {
         element.style.cssText = `
             position: absolute;
             bottom: 30%;
-            z-index: 5;
+            z-index: 15;
             max-height: 70vh;
+            display: block;
+            visibility: visible;
         `;
         
         switch(position) {
@@ -142,8 +144,29 @@ class Chapter3 {
         const charElement = this.currentCharacters[characterName];
         if (charElement) {
             const img = charElement.querySelector('.character-sprite');
-            const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
-            img.src = newPath;
+            
+            // Mapear expressões especiais para Erza
+            if (characterName === 'ezra' || characterName === 'erza') {
+                const erzaExpressionMap = {
+                    'neutral': 'ErzaSprite_happy.webp',
+                    'casual': 'ErzaSprite_happy.webp',
+                    'angry': 'ErzaSprite_angry.webp',
+                    'smirk': 'ErzaSprite_smirk.webp',
+                    'happy': 'ErzaSprite_happy.webp',
+                    'sad': 'ErzaSprite_angry.webp',
+                    'surprised': 'ErzaSprite_happy.webp',
+                    'cautious': 'ErzaSprite_smirk.webp',
+                    'nervous': 'ErzaSprite_angry.webp'
+                };
+                
+                const spriteFile = erzaExpressionMap[newExpression] || 'ErzaSprite_happy.webp';
+                const newPath = `./assets/images/characters/${spriteFile}`;
+                img.src = newPath;
+                console.log(`Changed Erza expression to ${newExpression} using ${spriteFile}`);
+            } else {
+                const newPath = `./assets/images/characters/${characterName}_${newExpression}.png`;
+                img.src = newPath;
+            }
         }
     }
 
@@ -469,8 +492,14 @@ class Chapter3 {
         }, 1000);
         
         if (this.pianoPuzzle.failures >= this.pianoPuzzle.maxFailures) {
-            this.failPianoPuzzle();
+            // Jumpscare intenso antes do game over
+            window.gameController.showRandomJumpscare(2500, () => {
+                this.failPianoPuzzle();
+            });
         } else {
+            // Jumpscare leve para erro
+            window.gameController.showRandomJumpscare(800);
+            
             // Atualizar contador de falhas
             const failureDisplay = pianoInterface.querySelector('p');
             failureDisplay.textContent = `Falhas: ${this.pianoPuzzle.failures}/${this.pianoPuzzle.maxFailures}`;
@@ -531,10 +560,33 @@ class Chapter3 {
                         this.showPianoInterface();
                     }, 500);
                 } else {
-                    window.dialogueSystem.hideDialogue();
-                    setTimeout(() => {
-                        this.startCrucialDialogue();
-                    }, 500);
+                    // Mostrar mensagem de que não há outro caminho
+                    const noWayOutDialogue = {
+                        speaker: '',
+                        text: 'Não há outro caminho. As paredes estão completamente seladas e não existe escapatória. O piano é a única forma de sair daqui. Os manequins continuam observando, esperando pacientemente.',
+                        choices: [
+                            {
+                                text: 'Aceitar e tentar o piano',
+                                type: 'neutral'
+                            }
+                        ]
+                    };
+
+                    window.dialogueSystem.showDialogue(noWayOutDialogue);
+                    
+                    const finalChoiceOriginal = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
+                    window.dialogueSystem.selectChoice = (finalChoiceIndex) => {
+                        finalChoiceOriginal(finalChoiceIndex);
+                        
+                        setTimeout(() => {
+                            window.dialogueSystem.hideDialogue();
+                            setTimeout(() => {
+                                this.showPianoInterface();
+                            }, 500);
+                        }, 500);
+                        
+                        window.dialogueSystem.selectChoice = originalSelectChoice;
+                    };
                 }
             }, 500);
             
@@ -1531,6 +1583,11 @@ class Chapter3 {
         // Explosão do painel
         this.explodeControlPanel();
         
+        // Mudar para o background final assombrado (jp 11)
+        setTimeout(() => {
+            this.changeBackground('jp (11)', 'fade');
+        }, 1000);
+        
         let endingText;
         if (choice === 0) {
             endingText = 'Evelly decide enfrentar a verdade sobre sua ligação com o HollowMind. O próximo capítulo revelará os segredos do laboratório...';
@@ -1569,11 +1626,17 @@ class Chapter3 {
             
             setTimeout(() => {
                 if (choiceIndex === 0) {
-                    // Tentar carregar Capítulo 4 (quando implementado)
-                    if (window.gameController && window.gameController.loadChapter) {
-                        window.gameController.loadChapter(4);
+                    // Carregar Capítulo 4 com sistema de rotas
+                    if (window.gameController && window.gameController.loadChapter4Route) {
+                        try {
+                            window.gameController.loadChapter4Route();
+                        } catch (error) {
+                            console.error('Erro ao carregar Capítulo 4:', error);
+                            alert('Erro ao carregar Capítulo 4. Voltando ao menu.');
+                            window.menuSystem?.showScreen('main-menu');
+                        }
                     } else {
-                        alert('Capítulo 4 será implementado em breve!');
+                        alert('Sistema de capítulos não está disponível.');
                         window.menuSystem?.showScreen('main-menu');
                     }
                 } else {

@@ -362,7 +362,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 2;
+    z-index: 10; /* Aumentado para garantir que apareça acima de outros elementos */
     pointer-events: none; /* Permite cliques passarem através */
 }
 
@@ -370,9 +370,10 @@ body {
 .character {
     position: absolute;
     bottom: 30%;
-    z-index: 5;
+    z-index: 15; /* Aumentado para garantir visibilidade */
     max-height: 70vh;
     transition: all 0.5s ease;
+    display: block; /* Garantir que esteja visível */
 }
 
 .character-left {
@@ -502,10 +503,36 @@ body {
 }
 
 .karma-display {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 0.5rem 1rem;
-    border: 1px solid #666;
-    min-width: 150px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 0, 20, 0.8));
+    padding: 1rem;
+    border: 2px solid #8B008B;
+    border-radius: 10px;
+    min-width: 200px;
+    box-shadow: 0 0 20px rgba(139, 0, 139, 0.3);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.karma-display:hover {
+    box-shadow: 0 0 30px rgba(139, 0, 139, 0.6);
+    transform: scale(1.02);
+}
+
+.karma-title {
+    color: #FFD700;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.karma-value {
+    color: #FFF;
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
 }
 
 @keyframes shake {
@@ -513,20 +540,70 @@ body {
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
+
+@keyframes jumpscareFlash {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.jumpscare-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-size: cover;
+    background-position: center;
+    animation: jumpscareFlash 0.5s ease-out, shake 0.5s ease-out;
+    pointer-events: none;
+}
 .karma-bar {
     width: 100%;
-    height: 10px;
-    background: #333;
-    border: 1px solid #666;
+    height: 15px;
+    background: linear-gradient(135deg, #1a0000, #330000);
+    border: 2px solid #8B0000;
+    border-radius: 10px;
     margin-top: 0.5rem;
     overflow: hidden;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    position: relative;
 }
 
 #karma-fill {
     height: 100%;
-    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00);
-    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #ff0000 0%, #ff4500 25%, #ffa500 50%, #32cd32 75%, #00ff00 100%);
+    transition: all 0.5s ease;
     width: 50%;
+    position: relative;
+    border-radius: 8px;
+    animation: karmaGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes karmaGlow {
+    0% { box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3); }
+    100% { box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.6), 0 0 15px rgba(139, 0, 139, 0.4); }
+}
+
+.karma-effect {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #FFD700;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    opacity: 0;
+    animation: karmaChange 1.5s ease-out;
+    pointer-events: none;
+}
+
+@keyframes karmaChange {
+    0% { opacity: 0; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 1; transform: translateX(-50%) translateY(-20px); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
 }
 
 .inventory {
