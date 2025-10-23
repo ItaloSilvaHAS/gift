@@ -26,6 +26,19 @@ class Chapter2 {
             maxDistance: 10
         };
     }
+    
+    startChapter() {
+        console.log('Starting Chapter 2: O Setor das Vozes');
+        setTimeout(() => {
+            this.loadChapter();
+        }, 500);
+    }
+    
+    loadChapter() {
+        console.log('Loading Chapter 2...');
+        // O capítulo 2 inicia diretamente
+        this.startScene1();
+    }
 
     // ====== SISTEMA DE EXIBIÇÃO DE PERSONAGENS ======
     showCharacter(characterName, expression = 'neutral', position = 'center') {
@@ -91,19 +104,20 @@ class Chapter2 {
     applyCharacterPosition(element, position) {
         element.style.cssText = `
             position: absolute;
-            bottom: 30%;
+            bottom: 0;
             z-index: 15;
-            max-height: 70vh;
-            display: block;
-            visibility: visible;
+            height: 65vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         `;
         
         switch(position) {
             case 'left':
-                element.style.left = '10%';
+                element.style.left = '15%';
                 break;
             case 'right':
-                element.style.right = '10%';
+                element.style.right = '15%';
                 break;
             case 'center':
                 element.style.left = '50%';
@@ -114,8 +128,8 @@ class Chapter2 {
         const img = element.querySelector('.character-sprite');
         if (img) {
             img.style.cssText = `
-                max-height: 100%;
-                max-width: 400px;
+                height: 100%;
+                width: auto;
                 object-fit: contain;
                 filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
             `;

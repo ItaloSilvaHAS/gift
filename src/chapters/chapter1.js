@@ -77,19 +77,20 @@ class Chapter1 {
         // Estilos CSS para posicionamento dos personagens
         element.style.cssText = `
             position: absolute;
-            bottom: 30%;
+            bottom: 0;
             z-index: 15;
-            max-height: 70vh;
-            display: block;
-            visibility: visible;
+            height: 65vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         `;
         
         switch(position) {
             case 'left':
-                element.style.left = '10%';
+                element.style.left = '15%';
                 break;
             case 'right':
-                element.style.right = '10%';
+                element.style.right = '15%';
                 break;
             case 'center':
                 element.style.left = '50%';
@@ -101,8 +102,8 @@ class Chapter1 {
         const img = element.querySelector('.character-sprite');
         if (img) {
             img.style.cssText = `
-                max-height: 100%;
-                max-width: 400px;
+                height: 100%;
+                width: auto;
                 object-fit: contain;
                 filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
                 display: block;
@@ -190,14 +191,21 @@ class Chapter1 {
         }
     }
 
-    async loadChapter() {
-        console.log('Carregando Capítulo 1: O Despertar');
+    startChapter() {
+        console.log('Starting Chapter 1: O Despertar');
         
         // Aplicar configurações visuais do capítulo
         this.applyChapterStyling();
         
         // Começar pela cena inicial
-        await this.startScene1();
+        setTimeout(() => {
+            this.startScene1();
+        }, 500);
+    }
+    
+    async loadChapter() {
+        console.log('Carregando Capítulo 1: O Despertar');
+        this.startChapter();
     }
 
     applyChapterStyling() {
@@ -995,6 +1003,11 @@ class Chapter1 {
     }
 
     showContinuationMessage() {
+        // Remover todos os personagens da tela
+        Object.keys(this.currentCharacters).forEach(charName => {
+            this.hideCharacter(charName);
+        });
+        
         const continuationDialogue = {
             speaker: '',
             text: 'Capítulo 1 completo! A história continua...',

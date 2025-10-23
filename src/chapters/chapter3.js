@@ -16,15 +16,32 @@ class Chapter3 {
             lightsFlashing: false
         };
         
-        // Fog chase system
-        this.fogChase = {
+        // Maze game system
+        this.mazeGame = {
             isActive: false,
-            playerPosition: 0,
-            fogPosition: -5,
-            maxDistance: 15,
-            timeRemaining: 30,
-            currentPath: [],
-            safeRooms: []
+            playerX: 1,
+            playerY: 1,
+            goalX: 13,
+            goalY: 13,
+            timeRemaining: 45,
+            cellSize: 30,
+            maze: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,1,0,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,1,0,1,1,1],
+                [1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ]
         };
         
         // Story flags
@@ -96,19 +113,20 @@ class Chapter3 {
     applyCharacterPosition(element, position) {
         element.style.cssText = `
             position: absolute;
-            bottom: 30%;
+            bottom: 0;
             z-index: 15;
-            max-height: 70vh;
-            display: block;
-            visibility: visible;
+            height: 65vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         `;
         
         switch(position) {
             case 'left':
-                element.style.left = '10%';
+                element.style.left = '15%';
                 break;
             case 'right':
-                element.style.right = '10%';
+                element.style.right = '15%';
                 break;
             case 'center':
                 element.style.left = '50%';
@@ -119,8 +137,8 @@ class Chapter3 {
         const img = element.querySelector('.character-sprite');
         if (img) {
             img.style.cssText = `
-                max-height: 100%;
-                max-width: 400px;
+                height: 100%;
+                width: auto;
                 object-fit: contain;
                 filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
             `;
@@ -760,7 +778,7 @@ class Chapter3 {
         window.dialogueSystem.showDialogue(continuation);
         
         window.dialogueSystem.nextAction = () => {
-            this.startFogChase();
+            this.startMazeGame();
         };
     }
 
@@ -822,7 +840,7 @@ class Chapter3 {
         
         setTimeout(() => {
             window.dialogueSystem.hideDialogue();
-            this.startFogChase();
+            this.startMazeGame();
         }, 3000);
     }
 
@@ -973,7 +991,7 @@ class Chapter3 {
         
         setTimeout(() => {
             window.dialogueSystem.hideDialogue();
-            this.startFogChase();
+            this.startMazeGame();
         }, 3000);
     }
 
@@ -1033,211 +1051,194 @@ class Chapter3 {
         }, 3000);
     }
 
-    // ====== CORRIDA DA NÉVOA ======
-    startFogChase() {
-        this.fogChase.isActive = true;
-        this.fogChase.playerPosition = 0;
-        this.fogChase.fogPosition = -5;
-        this.fogChase.timeRemaining = 30;
+    // ====== MINIGAME DO LABIRINTO ======
+    startMazeGame() {
+        this.mazeGame.isActive = true;
+        this.mazeGame.playerX = 1;
+        this.mazeGame.playerY = 1;
+        this.mazeGame.timeRemaining = 45;
         
         const introDialogue = {
             speaker: '',
-            text: 'De repente, o corredor atrás de vocês se fecha! Uma névoa vermelha e viva avança como uma onda mortal. Vocês precisam correr!',
-            effects: [{ type: 'fogChaseStart' }]
+            text: 'Vocês encontram uma sala estranha. No chão, há um tabuleiro luminoso com um labirinto projetado. Um cubo amarelo brilha no canto - vocês precisam guiá-lo até a saída antes que o tempo acabe!',
+            effects: [{ type: 'mazeStart' }]
         };
         
         window.dialogueSystem.showDialogue(introDialogue);
         
         setTimeout(() => {
             window.dialogueSystem.hideDialogue();
-            this.showFogChaseInterface();
+            this.showMazeInterface();
         }, 3000);
     }
 
-    showFogChaseInterface() {
+    showMazeInterface() {
         const gameScreen = document.getElementById('game-screen');
         
-        // Criar interface da corrida
-        const chaseInterface = document.createElement('div');
-        chaseInterface.id = 'fog-chase-interface';
-        chaseInterface.style.cssText = `
+        const mazeInterface = document.createElement('div');
+        mazeInterface.id = 'maze-interface';
+        mazeInterface.style.cssText = `
             position: absolute;
-            top: 20%;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #8B0000;
-            color: white;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #FFD700;
             text-align: center;
-            z-index: 10;
-            min-width: 400px;
+            font-family: 'Orbitron', monospace;
+            z-index: 100;
         `;
         
-        chaseInterface.innerHTML = `
-            <h3>Corrida da Névoa</h3>
-            <div id="chase-status">
-                <p>Distância da Névoa: <span id="fog-distance">${Math.abs(this.fogChase.playerPosition - this.fogChase.fogPosition)}</span></p>
-                <p>Tempo: <span id="chase-timer">${this.fogChase.timeRemaining}s</span></p>
-            </div>
-            <div id="path-choices" style="margin-top: 20px;">
-                <p id="path-description">Você está em um corredor. Para onde seguir?</p>
-                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
-                    <button class="path-choice" data-path="left" style="
-                        background: #4A4A4A;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">← Esquerda</button>
-                    <button class="path-choice" data-path="forward" style="
-                        background: #4A4A4A;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">↑ Frente</button>
-                    <button class="path-choice" data-path="right" style="
-                        background: #4A4A4A;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">→ Direita</button>
-                </div>
-            </div>
+        mazeInterface.innerHTML = `
+            <h3 style="color: #FFD700; margin-bottom: 15px;">LABIRINTO</h3>
+            <p style="color: white; margin-bottom: 10px;">Tempo: <span id="maze-timer" style="color: #FF6666;">${this.mazeGame.timeRemaining}s</span></p>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">Use as setas do teclado (↑↓←→)</p>
+            <canvas id="maze-canvas" width="450" height="450" style="border: 2px solid #FFD700; background: #1a1a1a;"></canvas>
         `;
         
-        gameScreen.appendChild(chaseInterface);
-        this.bindFogChaseEvents();
-        this.startFogChaseTimer();
+        gameScreen.appendChild(mazeInterface);
+        this.renderMaze();
+        this.bindMazeControls();
+        this.startMazeTimer();
     }
 
-    bindFogChaseEvents() {
-        const pathButtons = document.querySelectorAll('.path-choice');
+    renderMaze() {
+        const canvas = document.getElementById('maze-canvas');
+        if (!canvas) return;
         
-        pathButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const choice = e.target.dataset.path;
-                this.processFogChaseChoice(choice);
-            });
-        });
+        const ctx = canvas.getContext('2d');
+        const cellSize = this.mazeGame.cellSize;
+        
+        // Limpar canvas
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Desenhar labirinto
+        for (let y = 0; y < this.mazeGame.maze.length; y++) {
+            for (let x = 0; x < this.mazeGame.maze[y].length; x++) {
+                if (this.mazeGame.maze[y][x] === 1) {
+                    // Parede
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    ctx.strokeStyle = '#666';
+                    ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+        
+        // Desenhar objetivo (verde)
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(this.mazeGame.goalX * cellSize + 3, this.mazeGame.goalY * cellSize + 3, cellSize - 6, cellSize - 6);
+        
+        // Desenhar player (amarelo)
+        ctx.fillStyle = '#FFFF00';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#FFFF00';
+        ctx.fillRect(this.mazeGame.playerX * cellSize + 3, this.mazeGame.playerY * cellSize + 3, cellSize - 6, cellSize - 6);
+        ctx.shadowBlur = 0;
     }
 
-    processFogChaseChoice(choice) {
-        // Disable buttons temporarily
-        const pathButtons = document.querySelectorAll('.path-choice');
-        pathButtons.forEach(btn => btn.disabled = true);
+    bindMazeControls() {
+        this.mazeKeyHandler = (e) => {
+            if (!this.mazeGame.isActive) return;
+            
+            let newX = this.mazeGame.playerX;
+            let newY = this.mazeGame.playerY;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    newY--;
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    newY++;
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    newX--;
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    newX++;
+                    e.preventDefault();
+                    break;
+                default:
+                    return;
+            }
+            
+            // Verificar colisão
+            if (this.mazeGame.maze[newY] && this.mazeGame.maze[newY][newX] === 0) {
+                this.mazeGame.playerX = newX;
+                this.mazeGame.playerY = newY;
+                this.renderMaze();
+                
+                // Verificar vitória
+                if (newX === this.mazeGame.goalX && newY === this.mazeGame.goalY) {
+                    this.mazeClear();
+                }
+            }
+        };
         
-        // Process choice based on karma and random chance
-        const karma = window.gameState.karma;
-        let outcome = this.determineFogChaseOutcome(choice, karma);
-        
-        this.fogChase.playerPosition += outcome.advance;
-        this.fogChase.fogPosition += 1; // Fog always advances
-        
-        this.updateFogChaseDisplay();
-        
-        setTimeout(() => {
-            if (outcome.result === 'death') {
-                this.fogChaseGameOver();
-            } else if (outcome.result === 'secret') {
-                this.discoverSecretRoom();
-            } else if (this.fogChase.playerPosition >= this.fogChase.maxDistance) {
-                this.escapeFogChase();
-            } else if (this.fogChase.fogPosition >= this.fogChase.playerPosition) {
-                this.fogChaseGameOver();
-            } else {
-                this.continueFogChase(outcome.description);
+        document.addEventListener('keydown', this.mazeKeyHandler);
+    }
+
+    startMazeTimer() {
+        this.mazeTimer = setInterval(() => {
+            this.mazeGame.timeRemaining--;
+            const timerEl = document.getElementById('maze-timer');
+            if (timerEl) {
+                timerEl.textContent = `${this.mazeGame.timeRemaining}s`;
+                if (this.mazeGame.timeRemaining <= 10) {
+                    timerEl.style.color = '#FF0000';
+                }
+            }
+            
+            if (this.mazeGame.timeRemaining <= 0) {
+                clearInterval(this.mazeTimer);
+                this.mazeGameOver();
+            }
+            
+            if (!this.mazeGame.isActive) {
+                clearInterval(this.mazeTimer);
             }
         }, 1000);
     }
 
-    determineFogChaseOutcome(choice, karma) {
-        const outcomes = {
-            left: [
-                { advance: 2, result: 'safe', description: 'O corredor à esquerda está limpo.' },
-                { advance: 0, result: 'death', description: 'Beco sem saída! A névoa os alcança.' },
-                { advance: 3, result: 'secret', description: 'Você encontra uma sala secreta!' }
-            ],
-            forward: [
-                { advance: 1, result: 'safe', description: 'Você avança pelo corredor principal.' },
-                { advance: 2, result: 'safe', description: 'O caminho à frente está desobstruído.' }
-            ],
-            right: [
-                { advance: 2, result: 'safe', description: 'O corredor à direita leva mais longe.' },
-                { advance: 0, result: 'death', description: 'Uma armadilha! O chão desaba.' },
-                { advance: 4, result: 'secret', description: 'Você encontra um atalho secreto!' }
-            ]
-        };
+    mazeClear() {
+        this.mazeGame.isActive = false;
+        clearInterval(this.mazeTimer);
+        document.removeEventListener('keydown', this.mazeKeyHandler);
         
-        const choiceOutcomes = outcomes[choice];
-        let selectedOutcome;
+        const mazeInterface = document.getElementById('maze-interface');
+        if (mazeInterface) mazeInterface.remove();
         
-        if (karma > 5) {
-            // Alto karma - vozes guiam para escolhas certas
-            selectedOutcome = choiceOutcomes.filter(o => o.result !== 'death')[0] || choiceOutcomes[0];
-        } else if (karma < -5) {
-            // Baixo karma - vozes enganam
-            const chance = Math.random();
-            if (chance < 0.4) {
-                selectedOutcome = choiceOutcomes.find(o => o.result === 'death') || choiceOutcomes[0];
-            } else {
-                selectedOutcome = choiceOutcomes[Math.floor(Math.random() * choiceOutcomes.length)];
-            }
-        } else {
-            // Karma neutro - chance equilibrada
-            selectedOutcome = choiceOutcomes[Math.floor(Math.random() * choiceOutcomes.length)];
-        }
-        
-        return selectedOutcome;
-    }
-
-    updateFogChaseDisplay() {
-        const fogDistance = Math.abs(this.fogChase.playerPosition - this.fogChase.fogPosition);
-        document.getElementById('fog-distance').textContent = fogDistance;
-    }
-
-    continueFogChase(description) {
-        const pathDescription = document.getElementById('path-description');
-        pathDescription.textContent = description + ' Continue correndo!';
-        
-        const pathButtons = document.querySelectorAll('.path-choice');
-        pathButtons.forEach(btn => btn.disabled = false);
-    }
-
-    discoverSecretRoom() {
-        const secretDialogue = {
+        const successDialogue = {
             speaker: '',
-            text: 'Você encontra uma sala secreta com suprimentos médicos e munição! Sua saúde é restaurada e você ganha 6 cartuchos.',
-            effects: [{ type: 'secretRoom' }]
+            text: 'O cubo alcança o objetivo! O tabuleiro se desliga e uma porta secreta se abre. Vocês escaparam!',
+            effects: [{ type: 'mazeSuccess' }]
         };
         
-        // Adicionar itens ao inventário
-        window.gameState.addAmmo(6);
-        window.gameState.flags.healthRestored = true;
-        
-        window.dialogueSystem.showDialogue(secretDialogue);
+        window.dialogueSystem.showDialogue(successDialogue);
         
         setTimeout(() => {
             window.dialogueSystem.hideDialogue();
-            this.continueFogChase('Você encontrou suprimentos! Continue.');
-        }, 3000);
+            this.enterControlRoom();
+        }, 4000);
     }
 
-    fogChaseGameOver() {
-        const chaseInterface = document.getElementById('fog-chase-interface');
-        if (chaseInterface) chaseInterface.remove();
+    mazeGameOver() {
+        this.mazeGame.isActive = false;
+        clearInterval(this.mazeTimer);
+        document.removeEventListener('keydown', this.mazeKeyHandler);
         
-        this.fogChase.isActive = false;
+        const mazeInterface = document.getElementById('maze-interface');
+        if (mazeInterface) mazeInterface.remove();
         
         const gameOverDialogue = {
             speaker: '',
-            text: 'A névoa vermelha os envolve. Vocês sentem suas memórias se dissolvendo, suas formas se desfazendo na névoa viva...',
+            text: 'O tempo acabou! O tabuleiro se desintegra e o labirinto desaparece.',
             effects: [{ type: 'gameOver' }],
             choices: [
                 {
@@ -1260,52 +1261,14 @@ class Chapter3 {
             setTimeout(() => {
                 window.dialogueSystem.hideDialogue();
                 if (choiceIndex === 0) {
-                    // Tentar novamente
-                    this.startFogChase();
+                    this.startMazeGame();
                 } else {
-                    // Voltar ao menu
                     window.menuSystem.showScreen('main-menu');
                 }
             }, 500);
             
             window.dialogueSystem.selectChoice = originalSelectChoice;
         };
-    }
-
-    escapeFogChase() {
-        const chaseInterface = document.getElementById('fog-chase-interface');
-        if (chaseInterface) chaseInterface.remove();
-        
-        this.fogChase.isActive = false;
-        
-        const escapeDialogue = {
-            speaker: '',
-            text: 'Vocês conseguem! A névoa não consegue seguir além desta porta blindada. Ofegantes, vocês se encontram em uma sala de controle antiga.',
-            effects: [{ type: 'escapeSuccess' }]
-        };
-        
-        window.dialogueSystem.showDialogue(escapeDialogue);
-        
-        setTimeout(() => {
-            window.dialogueSystem.hideDialogue();
-            this.enterControlRoom();
-        }, 4000);
-    }
-
-    startFogChaseTimer() {
-        const timer = setInterval(() => {
-            this.fogChase.timeRemaining--;
-            document.getElementById('chase-timer').textContent = `${this.fogChase.timeRemaining}s`;
-            
-            if (this.fogChase.timeRemaining <= 0) {
-                clearInterval(timer);
-                this.fogChaseGameOver();
-            }
-            
-            if (!this.fogChase.isActive) {
-                clearInterval(timer);
-            }
-        }, 1000);
     }
 
     // ====== SALA DE CONTROLE E REVELAÇÃO ======
@@ -1680,23 +1643,24 @@ class Chapter3 {
     }
 
     // ====== MÉTODO PRINCIPAL DO CAPÍTULO ======
-    async loadChapter() {
-        console.log('Loading Chapter 3: A Tragédia Esquecida');
+    startChapter() {
+        console.log('Starting Chapter 3: A Tragédia Esquecida');
         
         // Limpar tela
         this.clearScreen();
         
-        // Narrativa inicial
-        await this.showOpeningNarrative();
-        
-        // Entrar no teatro
-        await this.enterTheater();
-        
-        // Iniciar puzzle do piano
-        this.startPianoPuzzle();
+        // Iniciar sequência
+        setTimeout(() => {
+            this.showOpeningNarrative();
+        }, 500);
+    }
+    
+    async loadChapter() {
+        console.log('Loading Chapter 3: A Tragédia Esquecida');
+        this.startChapter();
     }
 
-    async showOpeningNarrative() {
+    showOpeningNarrative() {
         this.changeBackground('fundocena3', 'fade');
         
         const openingDialogue = {
@@ -1711,23 +1675,20 @@ class Chapter3 {
         
         window.dialogueSystem.showDialogue(openingDialogue);
         
-        return new Promise(resolve => {
-            const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
-            window.dialogueSystem.selectChoice = (choiceIndex) => {
-                originalSelectChoice(choiceIndex);
-                setTimeout(() => {
-                    window.dialogueSystem.hideDialogue();
-                    resolve();
-                }, 500);
-                window.dialogueSystem.selectChoice = originalSelectChoice;
-            };
-        });
+        const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
+        window.dialogueSystem.selectChoice = (choiceIndex) => {
+            originalSelectChoice(choiceIndex);
+            setTimeout(() => {
+                window.dialogueSystem.hideDialogue();
+                this.enterTheater();
+            }, 500);
+            window.dialogueSystem.selectChoice = originalSelectChoice;
+        };
     }
 
-    async enterTheater() {
+    enterTheater() {
         this.changeBackground('fundocena3', 'fade');
-        this.showCharacter('evelly', 'nervous', 'left');
-        this.showCharacter('ezra', 'cautious', 'right');
+        this.showCharacter('ezra', 'cautious', 'center');
         
         // Adicionar efeitos do teatro
         this.addTheaterEffect();
@@ -1745,17 +1706,15 @@ class Chapter3 {
         
         window.dialogueSystem.showDialogue(theaterDialogue);
         
-        return new Promise(resolve => {
-            const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
-            window.dialogueSystem.selectChoice = (choiceIndex) => {
-                originalSelectChoice(choiceIndex);
-                setTimeout(() => {
-                    window.dialogueSystem.hideDialogue();
-                    resolve();
-                }, 500);
-                window.dialogueSystem.selectChoice = originalSelectChoice;
-            };
-        });
+        const originalSelectChoice = window.dialogueSystem.selectChoice.bind(window.dialogueSystem);
+        window.dialogueSystem.selectChoice = (choiceIndex) => {
+            originalSelectChoice(choiceIndex);
+            setTimeout(() => {
+                window.dialogueSystem.hideDialogue();
+                this.startPianoPuzzle();
+            }, 500);
+            window.dialogueSystem.selectChoice = originalSelectChoice;
+        };
     }
 
     clearScreen() {
@@ -1770,7 +1729,7 @@ class Chapter3 {
         effects.forEach(effect => effect.remove());
         
         // Limpar interfaces
-        const interfaces = gameScreen.querySelectorAll('#piano-interface, #fog-chase-interface, #control-panel, #qte-interface');
+        const interfaces = gameScreen.querySelectorAll('#piano-interface, #maze-interface, #control-panel, #qte-interface');
         interfaces.forEach(gameInterface => gameInterface.remove());
         
         // Resetar filtros
@@ -1782,7 +1741,13 @@ class Chapter3 {
     cleanup() {
         this.clearScreen();
         this.pianoPuzzle.isActive = false;
-        this.fogChase.isActive = false;
+        this.mazeGame.isActive = false;
+        if (this.mazeTimer) {
+            clearInterval(this.mazeTimer);
+        }
+        if (this.mazeKeyHandler) {
+            document.removeEventListener('keydown', this.mazeKeyHandler);
+        }
     }
 }
 

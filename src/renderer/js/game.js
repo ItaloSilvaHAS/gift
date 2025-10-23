@@ -258,10 +258,16 @@ class GameController {
             window.menuSystem?.showGameScreen();
 
             // Load the chapter using its module
-            if (chapter.module && chapter.module.loadChapter) {
-                await chapter.module.loadChapter();
+            if (chapter.module) {
+                if (chapter.module.startChapter) {
+                    chapter.module.startChapter();
+                } else if (chapter.module.loadChapter) {
+                    await chapter.module.loadChapter();
+                } else {
+                    throw new Error('Chapter module has no start/load method');
+                }
             } else {
-                throw new Error('Chapter module loadChapter method not found');
+                throw new Error('Chapter module not found');
             }
 
             return true;
