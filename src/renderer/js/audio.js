@@ -95,6 +95,12 @@ class AudioManager {
                 loop: true,
                 fadeIn: true
             },
+            'gameplay_music': { 
+                path: './assets/audio/musicaplay.mp3', 
+                volume: 0.6, 
+                loop: true,
+                fadeIn: true
+            },
             'chapter1_ambient': { 
                 path: 'assets/audio/music/chapter1_ambient.ogg', 
                 volume: 0.6, 

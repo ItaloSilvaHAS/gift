@@ -176,7 +176,7 @@ class MenuSystem {
 
     showGameScreen() {
         this.showScreen('game-screen');
-        window.audioManager?.stopMusic();
+        window.audioManager?.playMusic('gameplay_music', true);
     }
 
     startNewGame() {
