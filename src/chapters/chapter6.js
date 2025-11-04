@@ -1,8 +1,10 @@
 class Chapter6 {
     constructor() {
-        this.name = 'Renascimento ou Eternidade';
-        this.totalScenes = 6;
+        this.name = 'O Núcleo da Névoa';
+        this.totalScenes = 15;
         this.currentCharacters = {};
+        this.erzaAlive = true;
+        this.playerShot = false;
     }
 
     showCharacter(characterName, expression = 'neutral', position = 'center') {
@@ -130,323 +132,253 @@ class Chapter6 {
     }
 
     async start() {
-        console.log('Iniciando Capítulo 6: FINAL - Renascimento ou Eternidade');
+        console.log('Iniciando Capítulo 6: O Núcleo da Névoa');
         
         window.gameState.currentChapter = 6;
         window.gameState.currentScene = 1;
         
         this.clearScreen();
         
-        const karma = window.gameState.karma;
+        this.erzaAlive = !window.gameState.flags.erzaKnockedOut;
         
-        if (karma > 30) {
-            this.finalGoodEnding();
-        } else if (karma > 0) {
-            this.finalNeutralEnding();
-        } else {
-            this.finalBadEnding();
+        setTimeout(() => {
+            if (this.erzaAlive) {
+                this.startRouteWithErza();
+            } else {
+                this.startRouteSolo();
+            }
+        }, 500);
+    }
+
+    // ==================== ROTA SOLO (SEM ERZA) ====================
+
+    startRouteSolo() {
+        this.changeBackground('cap6.jpg', 'fade');
+        
+        const openingDialogue = {
+            speaker: '',
+            text: 'O elevador para com um solavanco violento. As portas se abrem lentamente, rangendo. Apenas... escuridão.'
+        };
+
+        window.dialogueSystem.showDialogue(openingDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloExitElevator();
+        });
+    }
+
+    soloExitElevator() {
+        const exitDialogue = {
+            speaker: 'Evelly',
+            text: 'Eu saí do elevador. Meus passos ecoam no vazio. Não vejo nada. Apenas sinto... um vazio consumidor.',
+            choices: [
+                {
+                    text: 'Avançar na escuridão',
+                    type: 'advance',
+                    karma: 5
+                },
+                {
+                    text: 'Ficar parada e esperar',
+                    type: 'wait',
+                    karma: 0
+                }
+            ]
+        };
+
+        window.dialogueSystem.showDialogue(exitDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloAdvanceInDarkness();
+        });
+    }
+
+    soloAdvanceInDarkness() {
+        const advanceDialogue = {
+            speaker: '',
+            text: 'Você avança (ou tenta ficar parada, mas seus pés se movem sozinhos). O elevador fecha atrás de você com um BANG ensurdecedor. E então...'
+        };
+
+        window.dialogueSystem.showDialogue(advanceDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloTraumaManifests();
+        });
+    }
+
+    soloTraumaManifests() {
+        const traumaDialogue = {
+            speaker: '',
+            text: 'GRITOS. Gritos de agonia. Você os conhece. São as vozes daqueles que morreram no teatro. O calor. O CALOR! As chamas lambem sua pele. Você sente tudo novamente.'
+        };
+
+        window.dialogueSystem.showDialogue(traumaDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloCorridorForms();
+        });
+    }
+
+    soloCorridorForms() {
+        const corridorDialogue = {
+            speaker: '',
+            text: 'Um corredor se forma ao seu redor. Paredes de carne pulsante. Chão de ossos carbonizados. E lá, no fim do corredor... uma figura se molda.'
+        };
+
+        window.dialogueSystem.showDialogue(corridorDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloShadowAppears();
+        });
+    }
+
+    soloShadowAppears() {
+        const shadowDialogue = {
+            speaker: 'A Sombra',
+            text: 'Finalmente... SOZINHA. Sem sua muleta. Sem sua falsa esperança. Agora... você é MINHA.'
+        };
+
+        window.dialogueSystem.showDialogue(shadowDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloCriticalChoice();
+        });
+    }
+
+    soloCriticalChoice() {
+        const choices = [];
+        
+        const hasAmmo = window.gameState && window.gameState.inventory && window.gameState.inventory.ammo > 0;
+        
+        if (hasAmmo) {
+            choices.push({
+                text: 'Atirar na Sombra',
+                type: 'shoot_shadow',
+                karma: 5
+            });
         }
-    }
 
-    finalGoodEnding() {
-        this.changeBackground('fundocena4.jpeg', 'fade');
-        
-        const scene1 = {
+        choices.push({
+            text: 'Tentar se controlar e enfrentar',
+            type: 'control',
+            karma: 20
+        });
+
+        if (hasAmmo) {
+            choices.push({
+                text: 'Atirar em si mesma',
+                type: 'shoot_self',
+                karma: -100
+            });
+        }
+
+        const choiceDialogue = {
             speaker: '',
-            text: 'A fusão entre Evelly e sua Sombra cria uma explosão de luz. O teatro dimensional se desintegra. Vocês sentem como se estivessem atravessando centenas de realidades simultaneamente.',
-            effects: [{ type: 'fadeIn', duration: 2000 }]
+            text: 'A Sombra avança. Seus dedos negros se estendem. O que você faz?',
+            choices: choices
         };
 
-        window.dialogueSystem.showDialogue(scene1);
+        window.dialogueSystem.showDialogue(choiceDialogue);
         
-        window.dialogueSystem.setNextAction(() => {
-            this.goodEnding_Part2();
+        window.dialogueSystem.setNextAction((choice) => {
+            if (choice && choice.type === 'shoot_self') {
+                this.soloShootSelf_BadEnding();
+            } else if (choice && choice.type === 'shoot_shadow') {
+                this.soloShootShadow();
+            } else {
+                this.soloControl();
+            }
         });
     }
 
-    goodEnding_Part2() {
-        this.showCharacter('ezra', 'surprised', 'right');
+    soloShootSelf_BadEnding() {
+        window.audioManager?.playSound('gunshot');
         
-        const scene2 = {
-            speaker: 'Ezra',
-            text: 'Evelly! Você está... diferente. Seus olhos... você consegue ver além do véu agora, não é?',
-        };
-
-        window.dialogueSystem.showDialogue(scene2);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.goodEnding_Part3();
-        });
-    }
-
-    goodEnding_Part3() {
-        const scene3 = {
-            speaker: 'Evelly (Completa)',
-            text: 'Sim. Eu me lembro de tudo agora. Todas as vidas. Todos os ciclos. E finalmente... estou livre. O HollowMind foi destruído. As outras vítimas presas também estão livres.',
-        };
-
-        window.dialogueSystem.showDialogue(scene3);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.goodEnding_Final();
-        });
-    }
-
-    goodEnding_Final() {
-        this.changeBackground('fundocena1.jpeg', 'fade');
-        
-        const finalScene = {
+        const shootDialogue = {
             speaker: '',
-            text: 'Vocês acordam em um campo aberto, sob um céu estrelado real. O teatro, a dimensão sombria, tudo desapareceu. Evelly está completa. O ciclo foi quebrado. Pela primeira vez em séculos, ela está verdadeiramente viva. FIM - FINAL VERDADEIRO: RENASCIMENTO',
-            choices: [
-                {
-                    text: 'Créditos',
-                    type: 'neutral'
+            text: 'BANG! A dor explode em seu peito. Você cai. A Sombra ri. Ri. RI. A escuridão te consome.'
+        };
+
+        window.dialogueSystem.showDialogue(shootDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            const background = document.getElementById('background');
+            background.style.transition = 'all 2s ease';
+            background.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (window.Chapter5 && window.Chapter5.prototype.realityCollapse) {
+                    const chapter5 = new window.Chapter5();
+                    chapter5.realityCollapse();
                 }
-            ]
-        };
-
-        window.dialogueSystem.showDialogue(finalScene);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.showCredits('RENASCIMENTO');
+            }, 2000);
         });
     }
 
-    finalNeutralEnding() {
-        this.changeBackground('fundocena3.jpeg', 'fade');
-        
-        const scene1 = {
+    soloShootShadow() {
+        const shootDialogue = {
             speaker: '',
-            text: 'Evelly busca uma terceira opção. Ela não aceita nem rejeita a Sombra. Em vez disso, propõe uma coexistência. A Sombra hesita, mas concorda.',
-            effects: [{ type: 'fadeIn', duration: 2000 }]
+            text: 'BANG! BANG! BANG! Os tiros atravessam a Sombra... mas ela apenas ri. "Você não pode me matar. Eu sou VOCÊ."'
         };
 
-        window.dialogueSystem.showDialogue(scene1);
+        window.dialogueSystem.showDialogue(shootDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.neutralEnding_Part2();
+            this.soloControl();
         });
     }
 
-    neutralEnding_Part2() {
-        this.showCharacter('ezra', 'cautious', 'right');
-        
-        const scene2 = {
-            speaker: 'Sombra',
-            text: 'Muito bem. Você não fugiu, mas também não aceitou completamente. O ciclo foi... modificado. Você viverá, mas eu permanecerei como sua consciência. Sempre presente.',
+    soloControl() {
+        const controlDialogue = {
+            speaker: 'Evelly',
+            text: 'NÃO! Você não é eu! Você é minha culpa, meu medo, minha dor... mas EU ESCOLHO não te alimentar mais!'
         };
 
-        window.dialogueSystem.showDialogue(scene2);
+        window.dialogueSystem.showDialogue(controlDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.neutralEnding_Final();
+            this.soloContinueToChapter7();
         });
     }
 
-    neutralEnding_Final() {
-        this.changeBackground('fundocena2.avif', 'fade');
-        
-        const finalScene = {
-            speaker: '',
-            text: 'O teatro não desaparece completamente. Ele se torna parte da realidade de Evelly, visível apenas para ela. Ela escapa do ciclo, mas carrega as memórias e a Sombra como parte de si. Uma liberdade incompleta. FIM - FINAL NEUTRO: COEXISTÊNCIA',
-            choices: [
-                {
-                    text: 'Créditos',
-                    type: 'neutral'
-                }
-            ]
-        };
-
-        window.dialogueSystem.showDialogue(finalScene);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.showCredits('COEXISTÊNCIA');
-        });
-    }
-
-    finalBadEnding() {
-        this.changeBackground('fundocena2.avif', 'fade');
-        
-        const scene1 = {
-            speaker: '',
-            text: 'Evelly ataca a Sombra com toda sua força. Um combate brutal se desenrola no palco dimensional. A Sombra grita, chora, implora. Mas Evelly não para.',
-            effects: [{ type: 'fadeIn', duration: 2000 }]
-        };
-
-        window.dialogueSystem.showDialogue(scene1);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.badEnding_Part2();
-        });
-    }
-
-    badEnding_Part2() {
-        const scene2 = {
-            speaker: 'Sombra (agonizante)',
-            text: 'Você... não entende... Se me destruir... o ciclo... REINICIA...',
-        };
-
-        window.dialogueSystem.showDialogue(scene2);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.badEnding_Part3();
-        });
-    }
-
-    badEnding_Part3() {
-        this.changeBackground('fundocena4.jpeg', 'fade');
-        
-        const scene3 = {
-            speaker: '',
-            text: 'A Sombra se desintegra. Por um momento, Evelly sente vitória. Então, tudo escurece. Um som familiar... o alarme de incêndio. O cheiro de fumaça. Ela está de volta no teatro. No dia do incêndio. Novamente.',
-        };
-
-        window.dialogueSystem.showDialogue(scene3);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.badEnding_Final();
-        });
-    }
-
-    badEnding_Final() {
-        this.showCharacter('ezra', 'neutral', 'right');
-        
-        const finalScene = {
-            speaker: 'Ezra',
-            text: 'Ei, Evelly! Você está bem? Ficou olhando para o vazio de novo. Vamos, o ensaio vai começar...',
-        };
-
-        window.dialogueSystem.showDialogue(finalScene);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.badEnding_Twist();
-        });
-    }
-
-    badEnding_Twist() {
-        const twistScene = {
-            speaker: '',
-            text: 'Evelly olha ao redor. Tudo está exatamente como estava. Ela não se lembra de nada do que aconteceu. O ciclo recomeçou. Pela milésima primeira vez. E ela nunca saberá. FIM - FINAL RUIM: CICLO ETERNO',
-            choices: [
-                {
-                    text: 'Créditos',
-                    type: 'neutral'
-                }
-            ]
-        };
-
-        window.dialogueSystem.showDialogue(twistScene);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.showCredits('CICLO ETERNO');
-        });
-    }
-
-    showCredits(endingType) {
-        this.clearScreen();
-        
-        const creditsDiv = document.createElement('div');
-        creditsDiv.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #000, #1a0033);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-            font-family: 'Orbitron', monospace;
-            color: white;
-            overflow-y: auto;
-            padding: 3rem;
-            text-align: center;
-        `;
-        
-        const karma = window.gameState.karma;
-        
-        creditsDiv.innerHTML = `
-            <h1 style="font-size: 3rem; margin-bottom: 1rem; color: #FFD700; text-shadow: 0 0 20px #FFD700;">
-                EVELLY: A SOMBRA DO HOLLOWMIND
-            </h1>
-            
-            <h2 style="font-size: 2rem; margin-bottom: 2rem; color: #FF69B4;">
-                FINAL OBTIDO: ${endingType}
-            </h2>
-            
-            <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                <p style="font-size: 1.3rem; margin-bottom: 0.5rem;">Karma Final: ${karma}</p>
-                <p style="font-size: 1.1rem; color: #DDA0DD;">
-                    ${karma > 30 ? '★★★ Perfeito - Você quebrou o ciclo!' : 
-                      karma > 0 ? '★★☆ Bom - Você encontrou um equilíbrio.' : 
-                      '★☆☆ Você ficou preso no ciclo.'}
-                </p>
-            </div>
-            
-            <div style="margin-top: 2rem; line-height: 2;">
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #90EE90;">História & Design</h3>
-                <p style="font-size: 1.1rem;">Criado com paixão para você</p>
-                
-                <h3 style="font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #90EE90;">Tecnologia</h3>
-                <p style="font-size: 1.1rem;">Electron, JavaScript, HTML5, CSS3</p>
-                
-                <h3 style="font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #90EE90;">Sistema de Karma</h3>
-                <p style="font-size: 1.1rem;">Suas escolhas moldaram esta história</p>
-                
-                <h3 style="font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #FFD700;">Obrigado por Jogar!</h3>
-                <p style="font-size: 1.2rem; margin-top: 1rem;">
-                    ${this.getEndingMessage(endingType)}
-                </p>
-            </div>
-            
-            <button id="return-menu-btn" style="
-                margin-top: 3rem;
-                padding: 1rem 3rem;
-                font-size: 1.2rem;
-                background: linear-gradient(135deg, #8B008B, #FF1493);
-                color: white;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                font-family: 'Orbitron', monospace;
-                transition: all 0.3s;
-            ">VOLTAR AO MENU PRINCIPAL</button>
-        `;
-        
-        document.body.appendChild(creditsDiv);
-        
-        const returnBtn = document.getElementById('return-menu-btn');
-        returnBtn.addEventListener('mouseenter', () => {
-            returnBtn.style.transform = 'scale(1.1)';
-            returnBtn.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
-        });
-        returnBtn.addEventListener('mouseleave', () => {
-            returnBtn.style.transform = 'scale(1)';
-            returnBtn.style.boxShadow = 'none';
-        });
-        returnBtn.addEventListener('click', () => {
-            creditsDiv.remove();
-            window.menuSystem?.showScreen('main-menu');
-        });
-        
-        window.gameState.flags.gameCompleted = true;
-        window.gameState.flags.endingAchieved = endingType;
+    soloContinueToChapter7() {
+        window.gameState.progressToNextChapter();
         window.saveSystem.autoSave();
+        
+        const continueDialogue = {
+            speaker: '',
+            text: 'A Sombra hesita. Por um momento, você vê... esperança? Não. É medo. Ela tem medo de você. Fim do Capítulo 6.',
+            choices: [
+                {
+                    text: 'Continuar para o Capítulo 7...',
+                    type: 'neutral'
+                }
+            ]
+        };
+
+        window.dialogueSystem.showDialogue(continueDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.clearScreen();
+            setTimeout(() => {
+                if (window.gameController) {
+                    window.gameController.loadChapter(7);
+                } else {
+                    console.error('GameController não encontrado!');
+                }
+            }, 1000);
+        });
     }
 
-    getEndingMessage(endingType) {
-        switch(endingType) {
-            case 'RENASCIMENTO':
-                return 'Você ajudou Evelly a quebrar o ciclo e encontrar a paz verdadeira. Parabéns pelo final perfeito!';
-            case 'COEXISTÊNCIA':
-                return 'Evelly encontrou um equilíbrio entre aceitar e negar seu passado. Um final agridoce, mas significativo.';
-            case 'CICLO ETERNO':
-                return 'Evelly permanece presa no ciclo infinito. Talvez, em outra vida, ela encontre a paz...';
-            default:
-                return 'Obrigado por experimentar esta jornada de horror psicológico!';
+    // ==================== ROTA COM ERZA ====================
+
+    startRouteWithErza() {
+        console.log('Iniciando rota com Erza (Chapter6Route2)');
+        
+        if (window.Chapter6Route2) {
+            const route2 = new window.Chapter6Route2();
+            route2.start();
+        } else {
+            console.error('Chapter6Route2 não encontrado!');
         }
     }
 }

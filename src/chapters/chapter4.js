@@ -289,24 +289,28 @@ class Chapter4 {
     startReactionGame() {
         const memoryDisplay = document.getElementById('memory-display');
         const scoreDisplay = document.getElementById('minigame-score');
+        const instructionDisplay = document.getElementById('minigame-instruction');
         
         const colors = ['#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
         const targetColor = '#ff0000';
         
         let score = 0;
         let attempts = 0;
-        const maxAttempts = 8;
+        const maxAttempts = 12;
         let currentColor = null;
         let gameActive = true;
         
+        instructionDisplay.innerHTML = 'Pressione <strong>ESPAÇO</strong> quando a cor <strong style="color: #ff0000;">VERMELHA</strong> aparecer!<br><span style="color: #ff6666; font-size: 0.9rem;">ATENÇÃO: Aperte apenas quando for vermelho! Erros custam pontos!</span>';
+        scoreDisplay.textContent = 'Acertos: 0 / 5';
+        
         const showRandomColor = () => {
             if (attempts >= maxAttempts) {
-                this.endReactionGame(score >= 3);
+                this.endReactionGame(score >= 5);
                 return;
             }
             
             attempts++;
-            const isTarget = Math.random() < 0.4;
+            const isTarget = Math.random() < 0.35;
             
             if (isTarget) {
                 currentColor = targetColor;
@@ -324,9 +328,9 @@ class Chapter4 {
                 memoryDisplay.textContent = 'Aguarde...';
                 currentColor = null;
                 
-                const nextDelay = 800 + Math.random() * 1200;
+                const nextDelay = 500 + Math.random() * 800;
                 setTimeout(showRandomColor, nextDelay);
-            }, 1200);
+            }, 750);
         };
         
         const spaceHandler = (e) => {
@@ -335,12 +339,19 @@ class Chapter4 {
                 
                 if (currentColor === targetColor) {
                     score++;
-                    scoreDisplay.textContent = `Acertos: ${score} / 3`;
+                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
                     scoreDisplay.style.color = '#00ff00';
-                    memoryDisplay.textContent = '✓';
+                    memoryDisplay.textContent = '✓ ACERTO!';
                 } else if (currentColor !== null) {
+                    score = Math.max(0, score - 1);
+                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
                     scoreDisplay.style.color = '#ff0000';
-                    memoryDisplay.textContent = '✗';
+                    memoryDisplay.textContent = '✗ ERRO!';
+                } else {
+                    score = Math.max(0, score - 1);
+                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
+                    scoreDisplay.style.color = '#ff0000';
+                    memoryDisplay.textContent = '✗ CEDO DEMAIS!';
                 }
                 
                 setTimeout(() => {
@@ -433,7 +444,7 @@ class Chapter4 {
         
         const revelationDialogue = {
             speaker: 'Ezra',
-            text: 'Evelly, olha aqui. Encontrei algo nos registros que carregava. "Paciente E.V. - Admitida após incidente traumático. Projeto Marionete - Fase 3." O que isso significa?',
+            text: 'Evelly, você não acha estranho? Digo...tudo isso. Você se lembra o que estava fazendo antes de chegar aqui? Hollowmind, o centro psiquiatrico. E se... e se tudo isso for parte de algo maior? Algo que você está tentando esconder até de si mesma? Quero dizer, você lembra de algo, não é? Lembra do que estava fazendo antes de acordar aqui?',
             effects: [{ type: 'discovery' }]
         };
 
@@ -447,7 +458,7 @@ class Chapter4 {
     scene6_EvellyReaction() {
         const reactionDialogue = {
             speaker: 'Evelly',
-            text: 'Projeto... Marionete? Não. NÃO. Isso não pode ser real. Eles... eles fizeram experimentos em mim? Ou será que tudo isso é só mais uma ilusão deste lugar maldito?',
+            text: 'Eu... eu não sei. Estou confusa. Tudo isso é tão... surreal.',
             choices: [
                 {
                     text: 'Aceitar a realidade e investigar mais',

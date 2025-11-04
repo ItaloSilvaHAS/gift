@@ -279,6 +279,11 @@ class DialogueSystem {
                 this.showDialogue(selectedChoice.nextDialogue);
             } else if (selectedChoice.nextScene) {
                 this.transitionToScene(selectedChoice.nextScene);
+            } else if (this.nextAction) {
+                const action = this.nextAction;
+                this.nextAction = null;
+                this.hideDialogue();
+                action(selectedChoice);
             } else {
                 this.advanceDialogue();
             }
