@@ -244,7 +244,6 @@ class Chapter6Route2 {
     startHub() {
         this.currentLocation = 'hub';
         this.triggerRandomHallucination();
-        this.showNavigationChoices();
     }
 
     triggerRandomHallucination() {
@@ -286,15 +285,13 @@ class Chapter6Route2 {
                     };
 
                     window.dialogueSystem.showDialogue(erzaResponseDialogue);
-                    window.dialogueSystem.setNextAction(() => {});
+                    window.dialogueSystem.setNextAction(() => {
+                        this.showNavigationChoices();
+                    });
                 });
             }, 1000);
-
-            if (Math.random() > 0.7) {
-                setTimeout(() => {
-                    window.gameController.showRandomJumpscare(2000);
-                }, 3000);
-            }
+        } else {
+            this.showNavigationChoices();
         }
     }
 
@@ -825,6 +822,12 @@ class Chapter6Route2 {
             karma: 30
         });
 
+        choices.push({
+            text: 'Confiar em Erza e seguir em frente',
+            type: 'trust_erza',
+            karma: 50
+        });
+
         const choiceDialogue = {
             speaker: '',
             text: 'Você segura a arma. Suas mãos tremem. O que você faz?',
@@ -838,10 +841,72 @@ class Chapter6Route2 {
                 this.shootErza();
             } else if (choice && choice.type === 'shoot_self') {
                 this.shootSelf();
+            } else if (choice && choice.type === 'trust_erza') {
+                this.trustErza();
             } else {
                 this.destroyComputer();
             }
         });
+    }
+
+    trustErza() {
+        this.hideCharacter('erza');
+        
+        const trustDialogue = {
+            speaker: 'Evelly',
+            text: 'Eu... eu confio em você, Erza. Você é real. Você TEM que ser. E mesmo que não seja... eu escolho acreditar.'
+        };
+
+        window.dialogueSystem.showDialogue(trustDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.erzaResponds();
+        });
+    }
+
+    erzaResponds() {
+        const erzaDialogue = {
+            speaker: 'Erza',
+            text: 'Evelly... você não está sozinha. Nunca esteve. Vamos sair daqui. JUNTAS.'
+        };
+
+        window.dialogueSystem.showDialogue(erzaDialogue);
+        
+        setTimeout(() => {
+            this.forceChapter7();
+        }, 3000);
+    }
+
+    forceChapter7() {
+        console.log('FORÇANDO TRANSIÇÃO PARA CAPÍTULO 7');
+        
+        const dialogueBox = document.getElementById('dialogue-box');
+        if (dialogueBox) {
+            dialogueBox.style.display = 'none';
+        }
+        
+        this.clearScreen();
+        
+        const background = document.getElementById('background');
+        if (background) {
+            background.style.opacity = '0';
+        }
+        
+        setTimeout(() => {
+            if (window.gameState) {
+                window.gameState.currentChapter = 7;
+                window.gameState.currentScene = 1;
+            }
+            
+            if (window.gameController) {
+                console.log('Chamando loadChapter(7)...');
+                window.gameController.currentChapter = null;
+                window.gameController.loadChapter(7);
+            } else {
+                console.error('gameController NÃO EXISTE!');
+                alert('ERRO: gameController não encontrado. Abrindo console...');
+            }
+        }, 1000);
     }
 
     shootErza() {
@@ -1082,6 +1147,7 @@ class Chapter6Route2 {
             creditsDiv.style.opacity = '1';
         }, 100);
     }
+
 }
 
 window.Chapter6Route2 = Chapter6Route2;

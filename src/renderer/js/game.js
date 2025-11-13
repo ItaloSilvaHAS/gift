@@ -84,6 +84,11 @@ class GameController {
                 name: 'Renascimento ou Eternidade',
                 scenes: 6,
                 module: null
+            },
+            7: {
+                name: 'O Fim ou o Recomeço',
+                scenes: 10,
+                module: null
             }
         };
     }
@@ -248,6 +253,9 @@ class GameController {
             } else if (chapterNumber === 6 && window.Chapter6) {
                 chapter.module = new window.Chapter6();
                 console.log('Chapter 6 module created successfully');
+            } else if (chapterNumber === 7 && window.Chapter7) {
+                chapter.module = new window.Chapter7();
+                console.log('Chapter 7 module created successfully');
             } else {
                 throw new Error(`Chapter ${chapterNumber} module not found after waiting`);
             }

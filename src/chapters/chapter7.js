@@ -139,7 +139,7 @@ class Chapter7 {
         window.gameState.currentScene = 1;
         
         this.clearScreen();
-        this.changeBackground('cap55.jpg', 'fade');
+        this.changeBackground('finalcap7.png', 'fade');
         
         setTimeout(() => {
             this.openingScene();

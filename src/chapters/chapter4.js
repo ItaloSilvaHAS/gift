@@ -1,11 +1,11 @@
-class Chapter4 {
+class Chapter6 {
     constructor() {
-        this.name = 'Fragmentos da Verdade';
-        this.totalScenes = 8;
-        this.currentPuzzle = null;
+        this.name = 'O Núcleo da Névoa';
+        this.totalScenes = 15;
         this.currentCharacters = {};
-        this.minigameActive = false;
-        this.playerChoice = null;
+        this.erzaAlive = true;
+        this.playerShot = false;
+        this.controlMinigameActive = false;
     }
 
     showCharacter(characterName, expression = 'neutral', position = 'center') {
@@ -114,14 +114,10 @@ class Chapter4 {
             
             setTimeout(() => {
                 background.style.backgroundImage = `url('${imagePath}')`;
-                background.style.backgroundSize = 'cover';
-                background.style.backgroundPosition = 'center';
                 background.style.opacity = '1';
             }, 1000);
         } else {
             background.style.backgroundImage = `url('${imagePath}')`;
-            background.style.backgroundSize = 'cover';
-            background.style.backgroundPosition = 'center';
         }
     }
 
@@ -137,117 +133,234 @@ class Chapter4 {
     }
 
     async start() {
-        console.log('Iniciando Capítulo 4: Fragmentos da Verdade');
+        console.log('Iniciando Capítulo 6: O Núcleo da Névoa');
         
-        window.gameState.currentChapter = 4;
+        window.gameState.currentChapter = 6;
         window.gameState.currentScene = 1;
         
         this.clearScreen();
         
+        this.erzaAlive = !window.gameState.flags.erzaKnockedOut;
+        
         setTimeout(() => {
-            this.scene1_Wandering();
+            if (this.erzaAlive) {
+                this.startRouteWithErza();
+            } else {
+                this.startRouteSolo();
+            }
         }, 500);
     }
 
-    scene1_Wandering() {
-        this.changeBackground('EveErza4cap.png', 'fade');
+    // ==================== ROTA SOLO (SEM ERZA) ====================
+
+    startRouteSolo() {
+        this.changeBackground('cap6rota1.avif', 'fade');
         
         const openingDialogue = {
             speaker: '',
-            text: 'Vocês caminham pelos corredores intermináveis. As paredes parecem respirar. O ar está denso, carregado de memórias que não são suas... ou são?',
-            effects: [{ type: 'fadeIn', duration: 2000 }]
+            text: 'O elevador para com um solavanco violento. As portas se abrem lentamente, rangendo. Apenas... escuridão.'
         };
 
         window.dialogueSystem.showDialogue(openingDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene2_ErzaQuestion();
+            this.soloExitElevator();
         });
     }
 
-    scene2_ErzaQuestion() {
-        this.showCharacter('ezra', 'nervous', 'right');
+    soloExitElevator() {
+        this.changeBackground('cap6rota1.avif', 'fade');
         
-        const ezraDialogue = {
-            speaker: 'Ezra',
-            text: 'Evelly... eu preciso te perguntar algo. Por que você está aqui? Em HollowMind, quero dizer. Eu... eu não sei a resposta. Mas tenho a sensação de que VOCÊ sabe.',
-            effects: [{ type: 'question' }]
-        };
-
-        window.dialogueSystem.showDialogue(ezraDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.scene3_EvellyResponse();
-        });
-    }
-
-    scene3_EvellyResponse() {
-        const responseDialogue = {
+        const exitDialogue = {
             speaker: 'Evelly',
-            text: 'Eu... não sei. Ou talvez... não queira saber. Tem algo na minha mente, como uma porta trancada que eu tenho medo de abrir.',
+            text: 'Eu saí do elevador. Meus passos ecoam no vazio. Não vejo nada. Apenas sinto... um vazio consumidor.',
             choices: [
                 {
-                    text: 'Tentar se lembrar, enfrentar a verdade',
-                    type: 'brave',
-                    karma: 10
-                },
-                {
-                    text: 'Evitar pensar nisso, continuar andando',
-                    type: 'avoid',
-                    karma: -5
-                },
-                {
-                    text: 'Pedir ajuda a Erza para entender',
-                    type: 'trust',
+                    text: 'Avançar na escuridão',
+                    type: 'advance',
                     karma: 5
+                },
+                {
+                    text: 'Ficar parada e esperar',
+                    type: 'wait',
+                    karma: 0
                 }
             ]
         };
 
-        window.dialogueSystem.showDialogue(responseDialogue);
+        window.dialogueSystem.showDialogue(exitDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene4_MemoryFlash();
+            this.soloAdvanceInDarkness();
         });
     }
 
-    scene4_MemoryFlash() {
-        const flashDialogue = {
+    soloAdvanceInDarkness() {
+        const advanceDialogue = {
             speaker: '',
-            text: 'De repente, uma dor lancinante atinge sua cabeça. Fragmentos de memórias começam a emergir - um palco em chamas, gritos, e... suas próprias mãos tremendo enquanto segurava algo.',
-            effects: [{ type: 'pain' }]
+            text: 'Você avança (ou tenta ficar parada, mas seus pés se movem sozinhos). O elevador fecha atrás de você com um BANG ensurdecedor. E então...'
         };
 
-        window.dialogueSystem.showDialogue(flashDialogue);
+        window.dialogueSystem.showDialogue(advanceDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.startMemoryMinigame();
+            this.soloTraumaManifests();
         });
     }
 
-    // ==================== MINIGAME 1: SEQUÊNCIA DE MEMÓRIA ====================
-
-    startMemoryMinigame() {
-        this.minigameActive = true;
+    soloTraumaManifests() {
+        window.audioManager?.playSound('jumpscare');
         
-        const minigameIntroDialogue = {
+        const traumaDialogue = {
             speaker: '',
-            text: 'Imagens piscam na sua mente em sequência rápida. Você precisa se concentrar e memorizar a ordem das cores que aparecem!',
-            effects: [{ type: 'warning' }]
+            text: 'GRITOS. Gritos de agonia. Você os conhece. São as vozes daqueles que morreram no teatro. O calor. O CALOR! As chamas lambem sua pele. Você sente tudo novamente.'
         };
 
-        window.dialogueSystem.showDialogue(minigameIntroDialogue);
+        window.dialogueSystem.showDialogue(traumaDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.runMemorySequenceGame();
+            this.soloCorridorForms();
         });
     }
 
-    runMemorySequenceGame() {
+    soloCorridorForms() {
+        const corridorDialogue = {
+            speaker: '',
+            text: 'Um corredor se forma ao seu redor. Paredes de carne pulsante. Chão de ossos carbonizados. E lá, no fim do corredor... uma figura se molda.'
+        };
+
+        window.dialogueSystem.showDialogue(corridorDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloShadowAppears();
+        });
+    }
+
+    soloShadowAppears() {
+        const shadowDialogue = {
+            speaker: 'A Sombra',
+            text: 'Finalmente... SOZINHA. Sem sua muleta. Sem sua falsa esperança. Agora... você é MINHA.'
+        };
+
+        window.dialogueSystem.showDialogue(shadowDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloCriticalChoice();
+        });
+    }
+
+    soloCriticalChoice() {
+        const choices = [];
+        
+        const hasAmmo = window.gameState && window.gameState.inventory && window.gameState.inventory.ammo > 0;
+        
+        if (hasAmmo) {
+            choices.push({
+                text: 'Atirar na Sombra',
+                type: 'shoot_shadow',
+                karma: 5
+            });
+        }
+
+        choices.push({
+            text: 'Tentar se controlar e enfrentar',
+            type: 'control',
+            karma: 20
+        });
+
+        if (hasAmmo) {
+            choices.push({
+                text: 'Atirar em si mesma',
+                type: 'shoot_self',
+                karma: -100
+            });
+        }
+
+        const choiceDialogue = {
+            speaker: '',
+            text: 'A Sombra avança. Seus dedos negros se estendem. O que você faz?',
+            choices: choices
+        };
+
+        window.dialogueSystem.showDialogue(choiceDialogue);
+        
+        window.dialogueSystem.setNextAction((choice) => {
+            if (choice && choice.type === 'shoot_self') {
+                this.soloShootSelf_BadEnding();
+            } else if (choice && choice.type === 'shoot_shadow') {
+                this.soloShootShadow();
+            } else {
+                this.soloControl();
+            }
+        });
+    }
+
+    soloShootSelf_BadEnding() {
+        window.audioManager?.playSound('gunshot');
+        
+        const shootDialogue = {
+            speaker: '',
+            text: 'BANG! A dor explode em seu peito. Você cai. A Sombra ri. Ri. RI. A escuridão te consome.'
+        };
+
+        window.dialogueSystem.showDialogue(shootDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            if (window.Chapter5 && window.Chapter5.prototype.realityCollapse) {
+                const chapter5 = new window.Chapter5();
+                chapter5.realityCollapse();
+            } else {
+                this.showBadEndingTragedy();
+            }
+        });
+    }
+
+    soloShootShadow() {
+        window.audioManager?.playSound('gunshot');
+        
+        const shootDialogue = {
+            speaker: '',
+            text: 'BANG! BANG! BANG! Os tiros atravessam a Sombra... mas ela apenas ri. "Você não pode me matar. Eu sou VOCÊ."'
+        };
+
+        window.dialogueSystem.showDialogue(shootDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.soloControl();
+        });
+    }
+
+    soloControl() {
+        const controlDialogue = {
+            speaker: 'Evelly',
+            text: 'NÃO! Você não é eu! Você é minha culpa, meu medo, minha dor... mas EU ESCOLHO não te alimentar mais!'
+        };
+
+        window.dialogueSystem.showDialogue(controlDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.startControlMinigame();
+        });
+    }
+
+    startControlMinigame() {
+        const minigameIntro = {
+            speaker: '',
+            text: 'A Sombra avança. Você sente seu corpo convulsionar. Os gritos enchem sua mente. Você precisa RESISTIR. Clique RÁPIDO para manter o controle!'
+        };
+
+        window.dialogueSystem.showDialogue(minigameIntro);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.runControlMinigame();
+        });
+    }
+
+    runControlMinigame() {
         const effectsDiv = document.getElementById('effects');
         
         const minigameContainer = document.createElement('div');
-        minigameContainer.id = 'memory-minigame';
+        minigameContainer.id = 'control-minigame';
         minigameContainer.style.cssText = `
             position: fixed;
             top: 0;
@@ -260,377 +373,401 @@ class Chapter4 {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #ff6666;
             font-family: 'Orbitron', monospace;
         `;
 
+        let controlLevel = 100;
+        let clicks = 0;
+        const targetClicks = 15;
+        let timeLeft = 10;
+        let gameInterval;
+        let countdownInterval;
+
         minigameContainer.innerHTML = `
-            <h2 style="font-size: 2rem; margin-bottom: 2rem; text-shadow: 0 0 10px #ff0000;">
-                TESTE DE REAÇÃO!
+            <h2 style="font-size: 2rem; color: #ff0000; text-shadow: 0 0 10px #ff0000;">
+                RESISTA À SOMBRA!
             </h2>
-            <div id="memory-display" style="width: 400px; height: 400px; background: #111; border: 3px solid #666; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 2rem; transition: all 0.3s;">
-                Aguarde...
+            <div style="margin: 2rem; font-size: 1.5rem; color: #fff;">
+                Controle: <span id="control-level">${controlLevel}</span>%
             </div>
-            <p id="minigame-instruction" style="font-size: 1.3rem; margin-top: 1rem; text-align: center; max-width: 600px;">
-                Pressione <strong>ESPAÇO</strong> quando a cor <strong style="color: #ff0000;">VERMELHA</strong> aparecer!
-            </p>
-            <p id="minigame-score" style="font-size: 1.1rem; margin-top: 1rem; color: #ffaa00;">
-                Acertos: 0 / 3
-            </p>
+            <div style="margin: 1rem; font-size: 1.2rem; color: #ff6666;">
+                Toques: <span id="click-count">${clicks}</span> / ${targetClicks}
+            </div>
+            <div style="margin: 1rem; font-size: 1.2rem; color: #ffff00;">
+                Tempo: <span id="time-left">${timeLeft}</span>s
+            </div>
+            <div style="margin-top: 2rem; padding: 2rem 4rem; background: #660000; color: #fff; border: 3px solid #ff0000; font-family: 'Orbitron', monospace; font-size: 1.5rem; box-shadow: 0 0 20px #ff0000; text-align: center;">
+                APERTE ESPAÇO!
+            </div>
         `;
 
         effectsDiv.appendChild(minigameContainer);
 
-        setTimeout(() => {
-            this.startReactionGame();
-        }, 2000);
-    }
+        const controlLevelSpan = document.getElementById('control-level');
+        const clickCountSpan = document.getElementById('click-count');
+        const timeLeftSpan = document.getElementById('time-left');
 
-    startReactionGame() {
-        const memoryDisplay = document.getElementById('memory-display');
-        const scoreDisplay = document.getElementById('minigame-score');
-        const instructionDisplay = document.getElementById('minigame-instruction');
-        
-        const colors = ['#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-        const targetColor = '#ff0000';
-        
-        let score = 0;
-        let attempts = 0;
-        const maxAttempts = 12;
-        let currentColor = null;
-        let gameActive = true;
-        
-        instructionDisplay.innerHTML = 'Pressione <strong>ESPAÇO</strong> quando a cor <strong style="color: #ff0000;">VERMELHA</strong> aparecer!<br><span style="color: #ff6666; font-size: 0.9rem;">ATENÇÃO: Aperte apenas quando for vermelho! Erros custam pontos!</span>';
-        scoreDisplay.textContent = 'Acertos: 0 / 5';
-        
-        const showRandomColor = () => {
-            if (attempts >= maxAttempts) {
-                this.endReactionGame(score >= 5);
-                return;
-            }
-            
-            attempts++;
-            const isTarget = Math.random() < 0.35;
-            
-            if (isTarget) {
-                currentColor = targetColor;
-                memoryDisplay.style.background = targetColor;
-                memoryDisplay.textContent = '🎯';
-            } else {
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
-                currentColor = randomColor;
-                memoryDisplay.style.background = randomColor;
-                memoryDisplay.textContent = '⭕';
-            }
-            
-            setTimeout(() => {
-                memoryDisplay.style.background = '#111';
-                memoryDisplay.textContent = 'Aguarde...';
-                currentColor = null;
-                
-                const nextDelay = 500 + Math.random() * 800;
-                setTimeout(showRandomColor, nextDelay);
-            }, 750);
-        };
-        
-        const spaceHandler = (e) => {
-            if (e.code === 'Space' && gameActive) {
+        const handleKeyPress = (e) => {
+            if (e.code === 'Space' || e.keyCode === 32) {
                 e.preventDefault();
-                
-                if (currentColor === targetColor) {
-                    score++;
-                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
-                    scoreDisplay.style.color = '#00ff00';
-                    memoryDisplay.textContent = '✓ ACERTO!';
-                } else if (currentColor !== null) {
-                    score = Math.max(0, score - 1);
-                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
-                    scoreDisplay.style.color = '#ff0000';
-                    memoryDisplay.textContent = '✗ ERRO!';
-                } else {
-                    score = Math.max(0, score - 1);
-                    scoreDisplay.textContent = `Acertos: ${score} / 5`;
-                    scoreDisplay.style.color = '#ff0000';
-                    memoryDisplay.textContent = '✗ CEDO DEMAIS!';
+                clicks++;
+                clickCountSpan.textContent = clicks;
+                controlLevel = Math.min(100, controlLevel + 10);
+                controlLevelSpan.textContent = controlLevel;
+
+                if (clicks >= targetClicks) {
+                    clearInterval(gameInterval);
+                    clearInterval(countdownInterval);
+                    document.removeEventListener('keydown', handleKeyPress);
+                    minigameContainer.remove();
+                    this.controlSuccess();
                 }
-                
-                setTimeout(() => {
-                    scoreDisplay.style.color = '#ffaa00';
-                }, 300);
             }
         };
-        
-        document.addEventListener('keydown', spaceHandler);
-        
-        this.reactionGameCleanup = () => {
-            gameActive = false;
-            document.removeEventListener('keydown', spaceHandler);
-        };
-        
-        showRandomColor();
-    }
 
-    endReactionGame(success) {
-        if (this.reactionGameCleanup) {
-            this.reactionGameCleanup();
-        }
-        
-        setTimeout(() => {
-            const minigameContainer = document.getElementById('memory-minigame');
-            if (minigameContainer) {
+        document.addEventListener('keydown', handleKeyPress);
+
+        gameInterval = setInterval(() => {
+            controlLevel = Math.max(0, controlLevel - 5);
+            controlLevelSpan.textContent = controlLevel;
+
+            if (controlLevel <= 0) {
+                clearInterval(gameInterval);
+                clearInterval(countdownInterval);
                 minigameContainer.remove();
+                this.controlFailure();
             }
+        }, 500);
 
-            this.minigameActive = false;
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            timeLeftSpan.textContent = timeLeft;
 
-            if (success) {
-                this.memoryGameSuccess();
-            } else {
-                this.memoryGameFailure();
+            if (timeLeft <= 0) {
+                clearInterval(gameInterval);
+                clearInterval(countdownInterval);
+                minigameContainer.remove();
+                this.controlFailure();
             }
-        }, 1500);
+        }, 1000);
     }
 
-    memoryGameSuccess() {
-        window.gameState.adjustKarma(10, 'Memória recuperada');
+    controlFailure() {
+        this.showBadEndingTragedy();
+    }
+
+    controlSuccess() {
+        const currentKarma = window.gameState?.karma || 0;
         
-        const successDialogue = {
+        if (currentKarma >= 50) {
+            this.liberationEnding();
+        } else {
+            this.continueToChapter7();
+        }
+    }
+
+    liberationEnding() {
+        const cryingDialogue = {
             speaker: 'Evelly',
-            text: 'Eu me lembro agora... era uma noite de estreia. O teatro estava cheio. Mas algo deu errado. Muito errado. E eu... eu estava lá.',
-            effects: [{ type: 'realization' }]
+            text: 'EU ME ARREPENDO! Eu sinto muito! MUITO! Se eu pudesse voltar... eu faria diferente! EU FARIA TUDO DIFERENTE!'
         };
 
-        window.dialogueSystem.showDialogue(successDialogue);
+        window.dialogueSystem.showDialogue(cryingDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene5_TheRevelation();
+            this.flashbackReveal();
         });
     }
 
-    memoryGameFailure() {
-        window.gameState.adjustKarma(-5, 'Falha na memória');
-        
-        const failureWarning = {
+    flashbackReveal() {
+        const flashbackDialogue = {
             speaker: '',
-            text: 'A dor se intensifica. Sua mente não consegue processar. Algo está vindo das sombras...',
-            effects: [{ type: 'warning' }]
+            text: 'Um flashback rasga sua mente. Você vê... TUDO. A verdade que você enterrou tão profundamente.'
         };
 
-        window.dialogueSystem.showDialogue(failureWarning);
+        window.dialogueSystem.showDialogue(flashbackDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            window.gameController.showRandomJumpscare(2500, () => {
-                this.afterFirstJumpscare();
-            });
+            this.theaterFlashback();
         });
     }
 
-    afterFirstJumpscare() {
-        const afterDialogue = {
-            speaker: 'Ezra',
-            text: 'EVELLY! Você está bem? Por um momento pensei que... Vamos continuar. Precisamos sair daqui.',
-            effects: [{ type: 'concern' }]
+    theaterFlashback() {
+        this.changeBackground('fundocena1.jpg', 'fade');
+        
+        const theaterDialogue = {
+            speaker: '',
+            text: 'O show. Seu show. O público gritava seu nome. A adrenalina. A GLÓRIA. "GRITEM MAIS!" você pediu. E então...'
         };
 
-        window.dialogueSystem.showDialogue(afterDialogue);
+        window.dialogueSystem.showDialogue(theaterDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene5_TheRevelation();
+            this.fireStarts();
         });
     }
 
-    scene5_TheRevelation() {
-        this.showCharacter('ezra', 'cautious', 'right');
-        
-        const revelationDialogue = {
-            speaker: 'Ezra',
-            text: 'Evelly, você não acha estranho? Digo...tudo isso. Você se lembra o que estava fazendo antes de chegar aqui? Hollowmind, o centro psiquiatrico. E se... e se tudo isso for parte de algo maior? Algo que você está tentando esconder até de si mesma? Quero dizer, você lembra de algo, não é? Lembra do que estava fazendo antes de acordar aqui?',
-            effects: [{ type: 'discovery' }]
+    fireStarts() {
+        const fireDialogue = {
+            speaker: '',
+            text: 'O fogo. Os efeitos pirotécnicos que deveriam apenas empolgar o público... começaram a se alastrar. As cortinas pegaram fogo. O pânico começou.'
         };
 
-        window.dialogueSystem.showDialogue(revelationDialogue);
+        window.dialogueSystem.showDialogue(fireDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene6_EvellyReaction();
+            this.criticalFlashbackChoice();
         });
     }
 
-    scene6_EvellyReaction() {
-        const reactionDialogue = {
-            speaker: 'Evelly',
-            text: 'Eu... eu não sei. Estou confusa. Tudo isso é tão... surreal.',
+    criticalFlashbackChoice() {
+        const choiceDialogue = {
+            speaker: '',
+            text: 'Você estava no palco. Podia parar o show. Podia SALVAR todos. Mas a glória... o momento perfeito... ou a vida deles?',
             choices: [
                 {
-                    text: 'Aceitar a realidade e investigar mais',
-                    type: 'acceptance',
-                    karma: 10
+                    text: 'Fugir sozinha - Preservar sua glória',
+                    type: 'selfish',
+                    karma: -100
                 },
                 {
-                    text: 'Negar e tentar fugir',
-                    type: 'denial',
-                    karma: -10
-                },
-                {
-                    text: 'Pedir a Erza para explicar tudo',
-                    type: 'trust',
-                    karma: 5
+                    text: 'Parar o show - Salvar todos',
+                    type: 'heroic',
+                    karma: 100
                 }
             ]
         };
 
-        window.dialogueSystem.showDialogue(reactionDialogue);
+        window.dialogueSystem.showDialogue(choiceDialogue);
         
-        window.dialogueSystem.setNextAction(() => {
-            this.scene7_FinalMoment();
+        window.dialogueSystem.setNextAction((choice) => {
+            if (choice && choice.type === 'selfish') {
+                setTimeout(() => {
+                    window.gameController.showRandomJumpscare(3000, () => {
+                        this.showBadEndingTragedy();
+                    });
+                }, 500);
+            } else {
+                this.heroicSacrifice();
+            }
         });
     }
 
-    scene7_FinalMoment() {
-        const finalDialogue = {
+    heroicSacrifice() {
+        const sacrificeDialogue = {
+            speaker: 'Evelly',
+            text: 'PAREM! SAIAM TODOS! AGORA! O fogo está se espalhando! CORRAM!'
+        };
+
+        window.dialogueSystem.showDialogue(sacrificeDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.everyoneEscapes();
+        });
+    }
+
+    everyoneEscapes() {
+        const escapeDialogue = {
             speaker: '',
-            text: 'O ambiente começa a se distorcer. As paredes derretem como cera. Vozes ecoam de todos os lados. "Marionete... marionete... dance para nós..."',
-            effects: [{ type: 'horror' }]
+            text: 'As pessoas correram. Você as guiou. Uma a uma. Todas escaparam. Mas você... você ficou pra trás. As chamas te cercaram. E então...'
+        };
+
+        window.dialogueSystem.showDialogue(escapeDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.showLiberationEnding();
+        });
+    }
+
+    showLiberationEnding() {
+        this.changeBackground('fundocena3.jpeg', 'fade');
+        
+        const endingDialogue = {
+            speaker: '',
+            text: 'Escuridão. E então... BIP. BIP. BIP.'
+        };
+
+        window.dialogueSystem.showDialogue(endingDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.hospitalReveal();
+        });
+    }
+
+    hospitalReveal() {
+        const doctorDialogue = {
+            speaker: 'Médico 1',
+            text: 'Nível de culpa reduzido em 78%. Córtex pré-frontal demonstrando aceitação do trauma. Projeto Névoa... parcial sucesso.'
+        };
+
+        window.dialogueSystem.showDialogue(doctorDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.doctorContinues();
+        });
+    }
+
+    doctorContinues() {
+        const doctor2Dialogue = {
+            speaker: 'Médico 2',
+            text: 'Mas os sinais vitais estão caindo. Ela não vai resistir. O experimento a empurrou além do limite.'
+        };
+
+        window.dialogueSystem.showDialogue(doctor2Dialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.finalDoctorWords();
+        });
+    }
+
+    finalDoctorWords() {
+        const finalDialogue = {
+            speaker: 'Médico 1',
+            text: 'A Névoa fez seu trabalho. Ela reconstruiu sua psique, forçou-a a confrontar a culpa. Mas o preço... foi alto demais. Paciente E.V.... falecida.'
         };
 
         window.dialogueSystem.showDialogue(finalDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.scene8_Collapse();
+            this.showLiberationCredits();
         });
     }
 
-    scene8_Collapse() {
-        this.showCharacter('ezra', 'nervous', 'right');
+    showLiberationCredits() {
+        const effectsDiv = document.getElementById('effects');
         
-        const collapseDialogue = {
-            speaker: 'Ezra',
-            text: 'Evelly? EVELLY! Não! Fica comigo! Por favor!',
-            effects: [{ type: 'panic' }]
-        };
+        const creditsDiv = document.createElement('div');
+        creditsDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a0033 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            opacity: 0;
+            transition: opacity 3s ease;
+        `;
 
-        window.dialogueSystem.showDialogue(collapseDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.evellyFaints();
-        });
-    }
+        creditsDiv.innerHTML = `
+            <h1 style="font-size: 4rem; margin-bottom: 2rem; text-shadow: 0 0 20px #00ffff; color: #00ffff;">
+                FINAL 2
+            </h1>
+            <h2 style="font-size: 2.5rem; color: #66ccff; text-shadow: 0 0 15px #0099ff;">
+                LIBERTAÇÃO
+            </h2>
+            <p style="margin-top: 3rem; font-size: 1.2rem; color: #aaa; max-width: 600px; text-align: center; line-height: 1.8;">
+                Evelly enfrentou seus demônios.<br>
+                No final, ela escolheu o heroísmo sobre a glória.<br>
+                A Névoa a libertou... mas custou tudo.<br><br>
+                O Projeto Névoa: Forçar a mente a reviver o trauma<br>
+                até que a culpa seja processada e aceita.
+            </p>
+            <button onclick="location.reload()" style="margin-top: 3rem; padding: 1rem 2rem; background: #003366; color: #fff; border: 2px solid #00ffff; font-family: 'Orbitron', monospace; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px #00ffff;">
+                Voltar ao Menu
+            </button>
+        `;
 
-    evellyFaints() {
-        const background = document.getElementById('background');
-        background.style.transition = 'opacity 3s ease';
-        background.style.opacity = '0';
-        
-        this.clearScreen();
+        effectsDiv.appendChild(creditsDiv);
 
-        const faintDialogue = {
-            speaker: '',
-            text: 'Tudo escurece. Você sente seu corpo desabar. A última coisa que ouve é a voz de Erza chamando seu nome, cada vez mais distante...',
-            effects: [{ type: 'fadeOut' }]
-        };
-
-        window.dialogueSystem.showDialogue(faintDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.transitionToHub();
-        });
-    }
-
-    transitionToHub() {
         setTimeout(() => {
-            const transitionDialogue = {
-                speaker: '',
-                text: '...',
-                effects: [{ type: 'blackScreen' }]
-            };
-
-            window.dialogueSystem.showDialogue(transitionDialogue);
-            
-            window.dialogueSystem.setNextAction(() => {
-                this.wakingUp();
-            });
-        }, 2000);
+            creditsDiv.style.opacity = '1';
+        }, 100);
     }
 
-    wakingUp() {
-        this.changeBackground('cap55.jpg', 'fade');
+    showBadEndingTragedy() {
+        const effectsDiv = document.getElementById('effects');
         
-        const wakeDialogue = {
-            speaker: '',
-            text: 'Você desperta lentamente. Luzes fluorescentes brancas ferem seus olhos. O cheiro de desinfetante hospitalar invade suas narinas. Você está... em um hospital?',
-            effects: [{ type: 'fadeIn', duration: 3000 }]
-        };
+        const creditsDiv = document.createElement('div');
+        creditsDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ff0000;
+            font-family: 'Orbitron', monospace;
+            opacity: 0;
+            transition: opacity 3s ease;
+        `;
 
-        window.dialogueSystem.showDialogue(wakeDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.erzaCarriedYou();
-        });
+        creditsDiv.innerHTML = `
+            <h1 style="font-size: 4rem; margin-bottom: 2rem; text-shadow: 0 0 20px #ff0000;">
+                FINAL 1
+            </h1>
+            <h2 style="font-size: 2.5rem; color: #aa0000; text-shadow: 0 0 15px #660000;">
+                TRAGÉDIA
+            </h2>
+            <p style="margin-top: 3rem; font-size: 1.2rem; color: #666; max-width: 600px; text-align: center;">
+                Evelly sucumbiu à loucura.<br>
+                A Névoa consumiu tudo.<br>
+                Não há escapatória da dor que você mesmo criou.
+            </p>
+            <button onclick="location.reload()" style="margin-top: 3rem; padding: 1rem 2rem; background: #660000; color: #fff; border: 2px solid #ff0000; font-family: 'Orbitron', monospace; font-size: 1rem; cursor: pointer;">
+                Voltar ao Menu
+            </button>
+        `;
+
+        effectsDiv.appendChild(creditsDiv);
+
+        setTimeout(() => {
+            creditsDiv.style.opacity = '1';
+        }, 100);
     }
 
-    erzaCarriedYou() {
-        this.showCharacter('ezra', 'nervous', 'right');
-        
-        const erzaDialogue = {
-            speaker: 'Ezra',
-            text: 'Você acordou! Graças a Deus. Eu te carreguei até aqui. Parece ser algum tipo de... recepção? Hub central? Não sei se aquilo tudo antes foi real ou... uma alucinação coletiva.',
-            effects: [{ type: 'relief' }]
-        };
-
-        window.dialogueSystem.showDialogue(erzaDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.hubDescription();
-        });
-    }
-
-    hubDescription() {
-        const hubDialogue = {
-            speaker: '',
-            text: 'Vocês estão em um hall de entrada hospitalar. À frente, uma porta de saída com luz verde. À esquerda, um balcão de recepção abandonado. À direita, um elevador com luzes apagadas. Salas de espera vazias cercam o ambiente.',
-            choices: [
-                {
-                    text: 'Entender o que aconteceu e seguir em frente',
-                    type: 'continue',
-                    karma: 5
-                }
-            ]
-        };
-
-        window.dialogueSystem.showDialogue(hubDialogue);
-        
-        window.dialogueSystem.setNextAction(() => {
-            this.endChapter4();
-        });
-    }
-
-    endChapter4() {
+    continueToChapter7() {
         window.gameState.progressToNextChapter();
         window.saveSystem.autoSave();
         
-        const endDialogue = {
+        const continueDialogue = {
             speaker: '',
-            text: 'Você se levanta, ainda tonta. Este lugar parece real. Muito real. Talvez mais real do que tudo que você viu antes. Fim do Capítulo 4.',
+            text: 'A Sombra hesita. Por um momento, você vê... esperança? Não. É medo. Ela tem medo de você. Fim do Capítulo 6.',
             choices: [
                 {
-                    text: 'Continuar para o Capítulo 5...',
+                    text: 'Continuar para o Capítulo 7...',
                     type: 'neutral'
                 }
             ]
         };
 
-        window.dialogueSystem.showDialogue(endDialogue);
+        window.dialogueSystem.showDialogue(continueDialogue);
         
         window.dialogueSystem.setNextAction(() => {
             this.clearScreen();
             setTimeout(() => {
                 if (window.gameController) {
-                    window.gameController.loadChapter(5);
+                    window.gameController.loadChapter(7);
                 } else {
                     console.error('GameController não encontrado!');
                 }
             }, 1000);
         });
     }
+
+    // ==================== ROTA COM ERZA ====================
+
+    startRouteWithErza() {
+        console.log('Iniciando rota com Erza (Chapter6Route2)');
+        
+        if (window.Chapter6Route2) {
+            const route2 = new window.Chapter6Route2();
+            route2.start();
+        } else {
+            console.error('Chapter6Route2 não encontrado!');
+        }
+    }
 }
 
-window.Chapter4 = Chapter4;
+window.Chapter6 = Chapter6;
