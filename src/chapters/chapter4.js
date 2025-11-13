@@ -1,4 +1,4 @@
-class Chapter6 {
+class Chapter4 {
     constructor() {
         this.name = 'O Núcleo da Névoa';
         this.totalScenes = 15;
@@ -770,4 +770,4 @@ class Chapter6 {
     }
 }
 
-window.Chapter6 = Chapter6;
+window.Chapter4 = Chapter4;

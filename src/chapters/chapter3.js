@@ -1751,10 +1751,6 @@ class Chapter3 {
         this.changeBackground("fundocena3", "fade");
         this.showCharacter("ezra", "cautious", "center");
 
-        // Adicionar efeitos do teatro
-        this.addTheaterEffect();
-        this.addMannequinsEffect();
-
         const theaterDialogue = {
             speaker: "",
             text: "Evelly e Ezra avançam pela sala das poltronas. Os assentos parecem ocupados, mas, ao se aproximar, notam que são apenas manequins queimados, de rostos derretidos, todos voltados para o palco. O chão de madeira range como um tablado antigo.",
