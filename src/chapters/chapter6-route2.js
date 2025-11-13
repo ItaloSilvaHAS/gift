@@ -6,7 +6,8 @@ class Chapter6Route2 {
             hasRedKey: false,
             hasBlueKey: false,
             hasFuse: false,
-            hasCrowbar: false
+            hasCrowbar: false,
+            hasPassword: false
         };
         this.doors = {
             redDoorOpen: false,
@@ -15,6 +16,8 @@ class Chapter6Route2 {
         };
         this.powerOn = false;
         this.currentCharacters = {};
+        this.hallucinationCount = 0;
+        this.computerPassword = '1984';
     }
 
     showCharacter(characterName, expression = 'neutral', position = 'center') {
@@ -144,7 +147,7 @@ class Chapter6Route2 {
     start() {
         console.log('Iniciando Capítulo 6 - Rota com Erza');
         
-        this.changeBackground('cap66.jpg', 'fade');
+        this.changeBackground('rota2cap6.avif', 'fade');
         this.clearScreen();
         
         setTimeout(() => {
@@ -153,9 +156,11 @@ class Chapter6Route2 {
     }
 
     elevatorOpening() {
+        this.changeBackground('rota2cap6.avif', 'fade');
+        
         const openingDialogue = {
             speaker: '',
-            text: 'O elevador para. As portas se abrem. Vocês veem um enorme complexo subterrâneo - paredes de concreto, luzes piscando, corredores se bifurcando em todas as direções.'
+            text: 'O elevador para. As portas se abrem. Vocês veem um enorme complexo subterrâneo - paredes de concreto, luzes piscando, corredores se bifurcando em todas as direções. Tudo está escuro.'
         };
 
         window.dialogueSystem.showDialogue(openingDialogue);
@@ -166,9 +171,11 @@ class Chapter6Route2 {
     }
 
     erzaSpeaks() {
+        this.showCharacter('erza', 'nervous', 'right');
+        
         const erzaDialogue = {
-            speaker: 'Evelly',
-            text: 'Eu... lembro de ter visto documentos na recepção. Falavam sobre algo chamado "Experimento Névoa" e "Indutor de Trauma Profundo". Isso é onde eles faziam... experimentos. Em pessoas como você.'
+            speaker: 'Erza',
+            text: 'Evelly... lembro de ter visto documentos na recepção. Falavam sobre algo chamado "Experimento Névoa" e "Indutor de Trauma Profundo". Esse lugar... é onde eles faziam experimentos. Em pessoas como você.'
         };
 
         window.dialogueSystem.showDialogue(erzaDialogue);
@@ -193,11 +200,39 @@ class Chapter6Route2 {
 
     erzaExplains() {
         const explainDialogue = {
-            speaker: 'Evelly',
-            text: 'Os documentos mencionavam uma "Sala de Controle Central". Se conseguirmos chegar lá, talvez possamos desativar a Névoa e... te libertar.'
+            speaker: 'Erza',
+            text: 'Os documentos mencionavam uma "Sala de Controle Central". Se conseguirmos chegar lá, talvez possamos desativar a Névoa e... te libertar. Mas está tudo escuro. Precisamos ligar a energia primeiro.'
         };
 
         window.dialogueSystem.showDialogue(explainDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.findInitialKey();
+        });
+    }
+
+    findInitialKey() {
+        const keyDialogue = {
+            speaker: '',
+            text: 'Você olha ao redor do hub central. No chão, próximo ao elevador, você vê algo brilhando... uma CHAVE AZUL!'
+        };
+
+        window.dialogueSystem.showDialogue(keyDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.pickupBlueKey();
+        });
+    }
+
+    pickupBlueKey() {
+        this.inventory.hasBlueKey = true;
+        
+        const pickupDialogue = {
+            speaker: 'Evelly',
+            text: 'Peguei a chave azul. Deve servir para abrir alguma porta por aqui.'
+        };
+
+        window.dialogueSystem.showDialogue(pickupDialogue);
         
         window.dialogueSystem.setNextAction(() => {
             this.startHub();
@@ -208,7 +243,59 @@ class Chapter6Route2 {
 
     startHub() {
         this.currentLocation = 'hub';
+        this.triggerRandomHallucination();
         this.showNavigationChoices();
+    }
+
+    triggerRandomHallucination() {
+        if (Math.random() > 0.6 && this.hallucinationCount < 5) {
+            const hallucinations = [
+                {
+                    text: 'Você ouve... gritos distantes. Gritos de agonia. Você pergunta: "Erza, você ouviu isso?"',
+                    erzaResponse: 'Ouvir o quê? Evelly, está tudo em silêncio aqui.'
+                },
+                {
+                    text: 'Uma sombra passa rápida no canto da sua visão. Você se vira, mas não há nada. "Erza, você viu isso?"',
+                    erzaResponse: 'Vi o quê? Evelly... você está bem?'
+                },
+                {
+                    text: 'O cheiro de fumaça invade suas narinas. Fogo. FOGO! "Erza, você está sentindo? O fogo!"',
+                    erzaResponse: 'Não tem fogo aqui, Evelly. Respira fundo. É só a sua mente.'
+                },
+                {
+                    text: 'Você ouve sussurros. Palavras incompreensíveis. Elas dizem coisas sobre você. Coisas terríveis.',
+                    erzaResponse: 'Evelly, não tem ninguém aqui além de nós. Foca em mim. Você está bem.'
+                }
+            ];
+
+            const hallucination = hallucinations[Math.floor(Math.random() * hallucinations.length)];
+            this.hallucinationCount++;
+
+            setTimeout(() => {
+                const hallucinationDialogue = {
+                    speaker: '',
+                    text: hallucination.text
+                };
+
+                window.dialogueSystem.showDialogue(hallucinationDialogue);
+                
+                window.dialogueSystem.setNextAction(() => {
+                    const erzaResponseDialogue = {
+                        speaker: 'Erza',
+                        text: hallucination.erzaResponse
+                    };
+
+                    window.dialogueSystem.showDialogue(erzaResponseDialogue);
+                    window.dialogueSystem.setNextAction(() => {});
+                });
+            }, 1000);
+
+            if (Math.random() > 0.7) {
+                setTimeout(() => {
+                    window.gameController.showRandomJumpscare(2000);
+                }, 3000);
+            }
+        }
     }
 
     showNavigationChoices() {
@@ -324,7 +411,7 @@ class Chapter6Route2 {
         if (!this.inventory.hasFuse) {
             const panelDialogue = {
                 speaker: '',
-                text: 'O painel está queimado. Falta um FUSÍVEL. Você precisa encontrar um fusível de reposição.'
+                text: 'O painel está queimado. Falta um FUSÍVEL. Você precisa encontrar um fusível de reposição em algum lugar deste complexo.'
             };
 
             window.dialogueSystem.showDialogue(panelDialogue);
@@ -347,10 +434,25 @@ class Chapter6Route2 {
         
         const installDialogue = {
             speaker: '',
-            text: 'Você instala o fusível. O painel ganha vida com um zumbido elétrico. As luzes do complexo se acendem. A Sala de Controle Central agora deve estar acessível!'
+            text: 'Você instala o fusível. O painel ganha vida com um zumbido elétrico. As luzes do complexo piscam e se acendem gradualmente. A Sala de Controle Central agora deve estar acessível!'
         };
 
         window.dialogueSystem.showDialogue(installDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.erzaReactsToLights();
+        });
+    }
+
+    erzaReactsToLights() {
+        this.showCharacter('erza', 'surprised', 'right');
+        
+        const erzaDialogue = {
+            speaker: 'Erza',
+            text: 'Conseguimos! Agora podemos ver... oh meu Deus. Evelly, olhe ao redor. Este lugar é... perturbador.'
+        };
+
+        window.dialogueSystem.showDialogue(erzaDialogue);
         window.dialogueSystem.setNextAction(() => this.redCorridorOptions());
     }
 
@@ -373,21 +475,22 @@ class Chapter6Route2 {
         
         const openDialogue = {
             speaker: '',
-            text: 'Você usa a chave vermelha. A porta se abre com um rangido. Dentro... uma sala de experimentação. Mesas cirúrgicas. Instrumentos de tortura. E no centro... um FUSÍVEL!'
+            text: 'Você usa a chave vermelha. A porta se abre com um rangido. Dentro... uma sala de experimentação. Mesas cirúrgicas. Instrumentos de tortura. E no centro... um FUSÍVEL e um PAPEL com anotações!'
         };
 
         window.dialogueSystem.showDialogue(openDialogue);
         window.dialogueSystem.setNextAction(() => {
-            this.findFuse();
+            this.findFuseAndPassword();
         });
     }
 
-    findFuse() {
+    findFuseAndPassword() {
         this.inventory.hasFuse = true;
+        this.inventory.hasPassword = true;
         
         const fuseDialogue = {
             speaker: '',
-            text: 'Você pega o FUSÍVEL. Este item pode reativar a energia do complexo.'
+            text: 'Você pega o FUSÍVEL e lê o papel: "Senha do Sistema Central: 1984". Este é o ano do livro sobre vigilância e controle mental...'
         };
 
         window.dialogueSystem.showDialogue(fuseDialogue);
@@ -517,7 +620,7 @@ class Chapter6Route2 {
         
         const toolsDialogue = {
             speaker: '',
-            text: 'Você pega o PÉ DE CABRA e a CHAVE VERMELHA. Estes itens serão úteis!'
+            text: 'Você pega o PÉ DE CABRA e a CHAVE VERMELHA. Estes itens serão úteis para continuar explorando!'
         };
 
         window.dialogueSystem.showDialogue(toolsDialogue);
@@ -529,101 +632,455 @@ class Chapter6Route2 {
     exploreControlRoom() {
         this.currentLocation = 'control_room';
         
+        if (!this.powerOn) {
+            const noPowerDialogue = {
+                speaker: '',
+                text: 'A sala de controle está escura. Você precisa ligar a energia primeiro.'
+            };
+            window.dialogueSystem.showDialogue(noPowerDialogue);
+            window.dialogueSystem.setNextAction(() => this.startHub());
+            return;
+        }
+        
         const controlDialogue = {
             speaker: '',
-            text: 'Você entra na Sala de Controle Central. Monitores cobrem as paredes. Você vê imagens de todas as vítimas da Névoa - incluindo VOCÊ.'
+            text: 'Você entra na Sala de Controle Central. Monitores cobrem as paredes. Você vê imagens de todas as vítimas da Névoa - incluindo VOCÊ. Seu rosto. Seus gritos. Tudo gravado.'
         };
 
         window.dialogueSystem.showDialogue(controlDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.findShutdownButton();
+            this.seeTheCenter();
         });
     }
 
-    findShutdownButton() {
-        const buttonDialogue = {
+    seeTheCenter() {
+        const centerDialogue = {
             speaker: '',
-            text: 'No centro, um console com um grande botão vermelho: "DESATIVAR PROJETO MARIONETE".'
+            text: 'No centro da sala, um enorme console. Acima dele, um letreiro: "PROJETO NÉVOA - HOLLOWMIND". Este é o coração de tudo.'
         };
 
-        window.dialogueSystem.showDialogue(buttonDialogue);
+        window.dialogueSystem.showDialogue(centerDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.finalDecision();
+            this.evellyHasVisions();
         });
     }
 
-    finalDecision() {
-        const decisionDialogue = {
+    evellyHasVisions() {
+        const visionDialogue = {
             speaker: 'Evelly',
-            text: 'Este é o momento. Se eu desativar a Névoa... eu serei livre. Mas... também perderei tudo que me trouxe até aqui. Inclusive... ela.',
-            choices: [
-                {
-                    text: 'Pressionar o botão e desativar a Névoa',
-                    type: 'shutdown',
-                    karma: 50
-                },
-                {
-                    text: 'Recusar e voltar',
-                    type: 'refuse',
-                    karma: -20
-                }
-            ]
+            text: 'Eu... estou vendo coisas. Imagens fragmentadas. Médicos. Cirurgias. Eletrodos na minha cabeça. Drogas sendo injetadas. Eles... MEXERAM NA MINHA MENTE!'
         };
 
-        window.dialogueSystem.showDialogue(decisionDialogue);
+        window.dialogueSystem.showDialogue(visionDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.erzaComforts();
+        });
+    }
+
+    erzaComforts() {
+        this.showCharacter('erza', 'sad', 'right');
+        
+        const comfortDialogue = {
+            speaker: 'Erza',
+            text: 'Evelly, foca em mim. Nós vamos descobrir a verdade. Vamos acabar com isso. Olha, tem um computador ali. Tenta ligar.'
+        };
+
+        window.dialogueSystem.showDialogue(comfortDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.accessComputer();
+        });
+    }
+
+    accessComputer() {
+        if (!this.inventory.hasPassword) {
+            const noPasswordDialogue = {
+                speaker: '',
+                text: 'O computador está ligado, mas pede uma senha. Você precisa encontrar a senha em algum lugar do complexo.'
+            };
+            window.dialogueSystem.showDialogue(noPasswordDialogue);
+            window.dialogueSystem.setNextAction(() => this.startHub());
+            return;
+        }
+
+        const passwordDialogue = {
+            speaker: '',
+            text: 'Você digita a senha encontrada: "1984". O sistema aceita. A tela se enche de documentos. Arquivos. Relatórios.'
+        };
+
+        window.dialogueSystem.showDialogue(passwordDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.readFiles();
+        });
+    }
+
+    readFiles() {
+        const filesDialogue = {
+            speaker: '',
+            text: 'PROJETO NÉVOA - OBJETIVO: Modificar o córtex pré-frontal através de exposição controlada a traumas reprimidos. EFEITOS COLATERAIS: Mudança de personalidade, esquizofrenia induzida, dissociação da realidade, alucinações persistentes.'
+        };
+
+        window.dialogueSystem.showDialogue(filesDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.continueReading();
+        });
+    }
+
+    continueReading() {
+        const moreFilesDialogue = {
+            speaker: '',
+            text: 'MÉTODO: Criar um mundo mental onde o sujeito revive seu trauma repetidamente até que a culpa seja processada e a personalidade seja "corrigida". TAXA DE SUCESSO: 12%. TAXA DE MORTALIDADE: 67%.'
+        };
+
+        window.dialogueSystem.showDialogue(moreFilesDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.epiphany();
+        });
+    }
+
+    epiphany() {
+        this.hideCharacter('erza');
+        
+        const epiphanyDialogue = {
+            speaker: 'Evelly',
+            text: 'Isso tudo... é REAL? Ou é tudo na minha cabeça? A Névoa... os monstros... VOCÊ?'
+        };
+
+        window.dialogueSystem.showDialogue(epiphanyDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.evellyTurnsToErza();
+        });
+    }
+
+    evellyTurnsToErza() {
+        this.showCharacter('erza', 'nervous', 'right');
+        
+        const turnDialogue = {
+            speaker: '',
+            text: 'Você se vira para Erza. Ela está ali. Olhando pra você. Mas... será que ela está MESMO?'
+        };
+
+        window.dialogueSystem.showDialogue(turnDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.erzaTries();
+        });
+    }
+
+    erzaTries() {
+        const erzaDialogue = {
+            speaker: 'Erza',
+            text: 'Evelly, eu sou REAL. Eu estou aqui. Com você. Eu sempre estive. Por favor, acredita em mim!'
+        };
+
+        window.dialogueSystem.showDialogue(erzaDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.narratorDoubt();
+        });
+    }
+
+    narratorDoubt() {
+        const doubtDialogue = {
+            speaker: '',
+            text: 'Mas as palavras ecoam vazias. Tudo ao seu redor - as paredes, os monitores, até Erza - parece irreal. Construções da sua mente quebrada. Você está sozinha. Sempre esteve.'
+        };
+
+        window.dialogueSystem.showDialogue(doubtDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.finalChoice();
+        });
+    }
+
+    finalChoice() {
+        const choices = [];
+        
+        const hasAmmo = window.gameState && window.gameState.inventory && window.gameState.inventory.ammo > 0;
+        
+        if (hasAmmo) {
+            choices.push({
+                text: 'Atirar em Erza',
+                type: 'shoot_erza',
+                karma: -50
+            });
+            
+            choices.push({
+                text: 'Atirar em si mesma',
+                type: 'shoot_self',
+                karma: -100
+            });
+        }
+
+        choices.push({
+            text: 'Destruir o computador',
+            type: 'destroy_computer',
+            karma: 30
+        });
+
+        const choiceDialogue = {
+            speaker: '',
+            text: 'Você segura a arma. Suas mãos tremem. O que você faz?',
+            choices: choices
+        };
+
+        window.dialogueSystem.showDialogue(choiceDialogue);
         
         window.dialogueSystem.setNextAction((choice) => {
-            if (choice && choice.type === 'shutdown') {
-                this.shutdownNevoa();
+            if (choice && choice.type === 'shoot_erza') {
+                this.shootErza();
+            } else if (choice && choice.type === 'shoot_self') {
+                this.shootSelf();
             } else {
-                this.startHub();
+                this.destroyComputer();
             }
         });
     }
 
-    shutdownNevoa() {
-        const shutdownDialogue = {
+    shootErza() {
+        window.audioManager?.playSound('gunshot');
+        
+        const shootDialogue = {
             speaker: '',
-            text: 'Você pressiona o botão. O complexo inteiro treme. Sirenes tocam. As luzes piscam violentamente. E então... silêncio.'
+            text: 'BANG! O tiro ecoa. Erza cai. Mas então... ela desaparece. Como fumaça. Você está sozinha. E a realidade começa a desmoronar.'
         };
 
-        window.dialogueSystem.showDialogue(shutdownDialogue);
+        window.dialogueSystem.showDialogue(shootDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.continueToChapter7();
+            if (window.Chapter5) {
+                const chapter5 = new window.Chapter5();
+                chapter5.realityCollapse();
+            }
         });
     }
 
-    continueToChapter7() {
-        window.gameState.progressToNextChapter();
-        window.gameState.flags.nevoaShutdown = true;
-        window.saveSystem.autoSave();
+    shootSelf() {
+        window.audioManager?.playSound('gunshot');
         
-        const continueDialogue = {
+        const shootDialogue = {
             speaker: '',
-            text: 'A Névoa se dissipa. Você sente... clareza. Pela primeira vez em muito tempo. Fim do Capítulo 6.',
-            choices: [
-                {
-                    text: 'Continuar para o Capítulo 7...',
-                    type: 'neutral'
-                }
-            ]
+            text: 'BANG! Dor. Escuridão. A Névoa te consome completamente.'
         };
 
-        window.dialogueSystem.showDialogue(continueDialogue);
+        window.dialogueSystem.showDialogue(shootDialogue);
         
         window.dialogueSystem.setNextAction(() => {
-            this.clearScreen();
-            setTimeout(() => {
-                if (window.gameController) {
-                    window.gameController.loadChapter(7);
-                } else {
-                    console.error('GameController não encontrado!');
-                }
-            }, 1000);
+            if (window.Chapter5) {
+                const chapter5 = new window.Chapter5();
+                chapter5.realityCollapse();
+            }
         });
+    }
+
+    destroyComputer() {
+        const destroyDialogue = {
+            speaker: 'Evelly',
+            text: 'NÃO! Eu vou ACABAR com isso! Se eu não posso confiar em nada, então eu vou DESTRUIR TUDO!'
+        };
+
+        window.dialogueSystem.showDialogue(destroyDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.smashComputer();
+        });
+    }
+
+    smashComputer() {
+        const smashDialogue = {
+            speaker: '',
+            text: 'Você ergue a arma e dispara no console. Uma vez. Duas. Três. O computador explode em faíscas. Alarmes tocam. E então...'
+        };
+
+        window.dialogueSystem.showDialogue(smashDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.matrixEnding();
+        });
+    }
+
+    matrixEnding() {
+        const background = document.getElementById('background');
+        background.style.transition = 'all 3s ease';
+        background.style.filter = 'blur(30px)';
+        background.style.opacity = '0.3';
+        
+        const nevoaDialogue = {
+            speaker: '',
+            text: 'A Névoa se envolve ao seu redor. Densa. Sufocante. Você não consegue respirar. Não consegue pensar. E então... BIP. BIP. BIP.'
+        };
+
+        window.dialogueSystem.showDialogue(nevoaDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.hospitalWakeup();
+        });
+    }
+
+    hospitalWakeup() {
+        this.changeBackground('fundocena3.jpeg', 'fade');
+        
+        const wakeupDialogue = {
+            speaker: '',
+            text: 'Você acorda. Luz branca. Teto branco. Você está deitada. Aparelhos conectados ao seu corpo. Tubos. Máquinas. Você está... em um HOSPITAL.'
+        };
+
+        window.dialogueSystem.showDialogue(wakeupDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.seeBody();
+        });
+    }
+
+    seeBody() {
+        const bodyDialogue = {
+            speaker: '',
+            text: 'Você olha para seu corpo. Magra. Pálida. Machucada. Quanto tempo você esteve aqui? Você tenta se mover, mas não consegue. E então... você vê ELES.'
+        };
+
+        window.dialogueSystem.showDialogue(bodyDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.doctorsAppear();
+        });
+    }
+
+    doctorsAppear() {
+        const doctorsDialogue = {
+            speaker: 'Médico 1',
+            text: 'Oh não. Ela acordou. Acordou CEDO DEMAIS. O experimento ainda não está completo!'
+        };
+
+        window.dialogueSystem.showDialogue(doctorsDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.evellyStruggles();
+        });
+    }
+
+    evellyStruggles() {
+        const struggleDialogue = {
+            speaker: 'Evelly',
+            text: 'NÃO! ME SOLTA! EU VOU SAIR DAQUI! ME DEIXA IR!'
+        };
+
+        window.dialogueSystem.showDialogue(struggleDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.doctorsHold();
+        });
+    }
+
+    doctorsHold() {
+        const holdDialogue = {
+            speaker: 'Médico 2',
+            text: 'Segura ela. SEGURA! Não pode deixar ela acordar agora. Precisa voltar pra Névoa. O experimento PRECISA continuar!'
+        };
+
+        window.dialogueSystem.showDialogue(holdDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.forcedBack();
+        });
+    }
+
+    forcedBack() {
+        const forceDialogue = {
+            speaker: '',
+            text: 'Eles te seguram. Contra sua vontade. Uma seringa. Uma injeção. Você sente o líquido frio entrar na sua veia. NÃO!'
+        };
+
+        window.dialogueSystem.showDialogue(forceDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.doctorsFinalWords();
+        });
+    }
+
+    doctorsFinalWords() {
+        const finalWordsDialogue = {
+            speaker: 'Médico 1',
+            text: 'O experimento ainda não acabou, Evelly. Você vai reviver tudo de novo. E de novo. E de novo. Até que você seja CURADA.'
+        };
+
+        window.dialogueSystem.showDialogue(finalWordsDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.fadeToBlack();
+        });
+    }
+
+    fadeToBlack() {
+        const background = document.getElementById('background');
+        background.style.transition = 'all 2s ease';
+        background.style.opacity = '0';
+        
+        const fadeDialogue = {
+            speaker: '',
+            text: 'Sua visão escurece. Você está caindo. Caindo de volta na Névoa. De volta ao início. De volta ao pesadelo.'
+        };
+
+        window.dialogueSystem.showDialogue(fadeDialogue);
+        
+        window.dialogueSystem.setNextAction(() => {
+            this.showMatrixEnding();
+        });
+    }
+
+    showMatrixEnding() {
+        const effectsDiv = document.getElementById('effects');
+        
+        const creditsDiv = document.createElement('div');
+        creditsDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #000033 0%, #003300 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            opacity: 0;
+            transition: opacity 3s ease;
+        `;
+
+        creditsDiv.innerHTML = `
+            <h1 style="font-size: 4rem; margin-bottom: 2rem; text-shadow: 0 0 20px #00ff00;">
+                FINAL 3
+            </h1>
+            <h2 style="font-size: 2.5rem; color: #00aa00; text-shadow: 0 0 15px #006600;">
+                A MATRIX
+            </h2>
+            <p style="margin-top: 3rem; font-size: 1.2rem; color: #aaa; max-width: 700px; text-align: center; line-height: 1.8;">
+                Evelly descobriu a verdade.<br>
+                Mas a verdade não a libertou.<br>
+                Ela está presa em um ciclo infinito de trauma e experimentação.<br>
+                O Projeto Névoa nunca termina.<br>
+                Ela reviverá tudo. Repetidamente. Eternamente.<br>
+                Bem-vinda à sua prisão mental.
+            </p>
+            <button onclick="location.reload()" style="margin-top: 3rem; padding: 1rem 2rem; background: #003300; color: #00ff00; border: 2px solid #00ff00; font-family: 'Orbitron', monospace; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px #00ff00;">
+                Voltar ao Menu
+            </button>
+        `;
+
+        effectsDiv.appendChild(creditsDiv);
+
+        setTimeout(() => {
+            creditsDiv.style.opacity = '1';
+        }, 100);
     }
 }
 

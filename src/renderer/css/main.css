@@ -517,6 +517,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    position: relative;
+    z-index: 100;
 }
 
 .choice-btn {
@@ -528,6 +530,9 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: 'Orbitron', monospace;
+    position: relative;
+    z-index: 101;
+    pointer-events: auto;
 }
 
 .choice-btn:hover {
